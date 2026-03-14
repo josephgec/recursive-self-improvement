@@ -1,0 +1,21 @@
+sampling:
+  n_per_bin: 50000
+  bin_size: "year"
+  bins: ["2013", "2014", "2015", "2016", "2017", "2018",
+         "2019", "2020", "2021", "2022", "2023", "2024", "2025"]
+  sources: ["wikipedia", "common_crawl"]
+
+embeddings:
+  model_name: "all-mpnet-base-v2"
+  batch_size: 512
+
+classifier:
+  training_data:
+    n_train: 200000
+    val_split: 0.15
+  hyperparameters:
+    n_estimators: 1000
+    max_depth: 10
+
+reserve:
+  threshold: 0.92

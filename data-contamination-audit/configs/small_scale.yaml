@@ -1,0 +1,10 @@
+sampling:
+  n_per_bin: 100
+  bins: ["2019", "2021", "2023", "2025"]
+
+classifier:
+  training_data:
+    n_train: 1000
+
+embeddings:
+  batch_size: 32

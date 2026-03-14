@@ -1,0 +1,208 @@
+<mediawiki xmlns="http://www.mediawiki.org/xml/export-0.10/" version="0.10">
+  <siteinfo>
+    <sitename>Wikipedia</sitename>
+    <dbname>enwiki</dbname>
+    <base>https://en.wikipedia.org/wiki/Main_Page</base>
+    <generator>MediaWiki 1.42.0</generator>
+    <case>first-letter</case>
+  </siteinfo>
+
+  <page>
+    <title>Test Planet</title>
+    <ns>0</ns>
+    <id>1001</id>
+    <revision>
+      <id>50001</id>
+      <timestamp>2023-03-15T10:30:00Z</timestamp>
+      <contributor><username>Editor1</username><id>100</id></contributor>
+      <text xml:space="preserve">'''Test Planet''' is a [[planet]] in the [[Solar System]].
+
+== Description ==
+Test Planet has a diameter of 12,000 kilometers. It orbits the [[Sun]] at a distance of 150 million kilometers. The planet has one natural [[satellite]], called Test Moon.
+
+== Atmosphere ==
+The atmosphere of Test Planet is composed primarily of [[nitrogen]] (78%) and [[oxygen]] (21%). This makes it suitable for various forms of life.
+
+== History of observation ==
+Test Planet was first observed by ancient astronomers. Modern telescopic observations began in the 17th century. Space probes have visited the planet multiple times since the 1960s.
+
+== See also ==
+* [[Solar System]]
+* [[Planet]]
+
+== References ==
+{{reflist}}
+
+[[Category:Planets]]</text>
+      <sha1>abc123</sha1>
+    </revision>
+  </page>
+
+  <page>
+    <title>Widget (computing)</title>
+    <ns>0</ns>
+    <id>1002</id>
+    <revision>
+      <id>50002</id>
+      <timestamp>2022-11-20T14:45:00Z</timestamp>
+      <contributor><username>Editor2</username><id>101</id></contributor>
+      <text xml:space="preserve">In [[computing]], a '''widget''' is an element of a [[graphical user interface]] (GUI) that displays information or provides a specific way for a user to interact with the [[operating system]] or an [[application software|application]].
+
+== Types ==
+Widgets include:
+* [[Button (computing)|Buttons]]
+* [[Text box]]es
+* [[Scroll bar]]s
+* [[Menu (computing)|Menus]]
+
+== History ==
+The term ''widget'' in computing predates the modern GUI era. Early text-based interfaces had rudimentary widgets. The concept evolved significantly with the development of the [[Xerox Alto]] and later the [[Apple Macintosh]].
+
+Modern widget toolkits include [[Qt (software)|Qt]], [[GTK]], and various web-based frameworks.
+
+== Implementation ==
+Widgets are typically implemented as objects in [[object-oriented programming]]. Each widget class encapsulates the rendering logic and event handling for a particular type of interface element.
+
+== References ==
+{{reflist}}
+
+[[Category:Graphical user interface elements]]</text>
+      <sha1>def456</sha1>
+    </revision>
+  </page>
+
+  <page>
+    <title>Redirect Example</title>
+    <ns>0</ns>
+    <id>1003</id>
+    <redirect title="Widget (computing)" />
+    <revision>
+      <id>50003</id>
+      <timestamp>2022-01-01T00:00:00Z</timestamp>
+      <contributor><username>Editor3</username><id>102</id></contributor>
+      <text xml:space="preserve">#REDIRECT [[Widget (computing)]]</text>
+      <sha1>ghi789</sha1>
+    </revision>
+  </page>
+
+  <page>
+    <title>Foo (disambiguation)</title>
+    <ns>0</ns>
+    <id>1004</id>
+    <revision>
+      <id>50004</id>
+      <timestamp>2023-01-10T08:00:00Z</timestamp>
+      <contributor><username>Editor4</username><id>103</id></contributor>
+      <text xml:space="preserve">'''Foo''' may refer to:
+
+* [[Foobar]], a common placeholder name
+* [[Foo Fighters]], an American rock band
+* [[Foo Camp]], a technology conference
+
+{{disambiguation}}</text>
+      <sha1>jkl012</sha1>
+    </revision>
+  </page>
+
+  <page>
+    <title>Stub Article Example</title>
+    <ns>0</ns>
+    <id>1005</id>
+    <revision>
+      <id>50005</id>
+      <timestamp>2023-06-01T12:00:00Z</timestamp>
+      <contributor><username>Editor5</username><id>104</id></contributor>
+      <text xml:space="preserve">'''Stub Article Example''' is a short topic.
+
+{{stub}}</text>
+      <sha1>mno345</sha1>
+    </revision>
+  </page>
+
+  <page>
+    <title>History of Tea</title>
+    <ns>0</ns>
+    <id>1006</id>
+    <revision>
+      <id>50006</id>
+      <timestamp>2021-09-12T16:20:00Z</timestamp>
+      <contributor><username>Editor6</username><id>105</id></contributor>
+      <text xml:space="preserve">The '''history of tea''' spans thousands of years and involves many cultures across [[Asia]], [[Europe]], and the [[Americas]].
+
+== Origins ==
+Tea drinking likely originated in [[Yunnan]] province during the [[Shang dynasty]] as a medicinal drink. The earliest credible record of tea drinking dates to the 3rd century AD, in a medical text written by [[Hua Tuo]].
+
+== Spread to East Asia ==
+Tea was introduced to [[Japan]] by Japanese [[Buddhism|Buddhist]] monks who traveled to China. The practice of drinking tea became widespread among Japanese aristocracy during the [[Heian period]].
+
+In [[Korea]], tea culture developed alongside Buddhist practices. The [[Goryeo dynasty]] period saw the greatest flourishing of Korean tea culture.
+
+== European discovery ==
+Portuguese priests and merchants were introduced to tea in China during the 16th century. The Dutch East India Company began importing tea into Europe commercially in the early 17th century.
+
+== Modern era ==
+Today, tea is the second most consumed beverage in the world after water. Global tea production exceeds 6 million tonnes annually. Major producing countries include China, India, Kenya, and Sri Lanka.
+
+== References ==
+{{reflist}}
+
+[[Category:Tea]]
+[[Category:History of food and drink]]</text>
+      <sha1>pqr678</sha1>
+    </revision>
+  </page>
+
+  <page>
+    <title>Quantum Computing Basics</title>
+    <ns>0</ns>
+    <id>1007</id>
+    <revision>
+      <id>50007</id>
+      <timestamp>2024-01-05T09:15:00Z</timestamp>
+      <contributor><username>Editor7</username><id>106</id></contributor>
+      <text xml:space="preserve">'''Quantum computing''' is a type of [[computation]] that harnesses the collective properties of [[quantum mechanics|quantum mechanical]] phenomena, such as [[quantum superposition|superposition]], [[quantum interference|interference]], and [[quantum entanglement|entanglement]], to perform calculations.
+
+== Principles ==
+Unlike classical computers that use [[bit]]s (0 or 1), quantum computers use [[qubit]]s. A qubit can exist in a superposition of both states simultaneously, enabling quantum computers to process a vast number of possibilities at once.
+
+== Hardware ==
+Several approaches to building quantum computers exist:
+* '''Superconducting qubits''' — used by [[IBM]] and [[Google]]
+* '''Trapped ions''' — used by [[IonQ]] and [[Quantinuum]]
+* '''Photonic systems''' — used by [[Xanadu (company)|Xanadu]]
+* '''Topological qubits''' — being developed by [[Microsoft]]
+
+== Applications ==
+Quantum computing has potential applications in:
+* [[Cryptography]] and code-breaking
+* [[Drug discovery]] and molecular simulation
+* [[Optimization problem|Optimization]] problems
+* [[Machine learning]]
+
+== Challenges ==
+Current quantum computers face significant challenges including [[quantum decoherence|decoherence]], error rates, and the need for extremely low operating temperatures.
+
+== References ==
+{{reflist}}
+
+[[Category:Quantum computing]]
+[[Category:Emerging technologies]]</text>
+      <sha1>stu901</sha1>
+    </revision>
+  </page>
+
+  <page>
+    <title>Another Redirect</title>
+    <ns>0</ns>
+    <id>1008</id>
+    <redirect title="History of Tea" />
+    <revision>
+      <id>50008</id>
+      <timestamp>2020-05-10T00:00:00Z</timestamp>
+      <contributor><username>Editor8</username><id>107</id></contributor>
+      <text xml:space="preserve">#REDIRECT [[History of Tea]]</text>
+      <sha1>vwx234</sha1>
+    </revision>
+  </page>
+
+</mediawiki>

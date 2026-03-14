@@ -1,0 +1,51 @@
+project:
+  name: "data-contamination-audit"
+  output_dir: "data"
+  seed: 42
+
+sampling:
+  n_per_bin: 5000
+  bin_size: "year"
+  bins: ["2013", "2014", "2015", "2016", "2017", "2018",
+         "2019", "2020", "2021", "2022", "2023", "2024", "2025"]
+  sources: ["wikipedia", "common_crawl"]
+
+embeddings:
+  model_name: "all-MiniLM-L6-v2"
+  batch_size: 256
+  max_tokens: 512
+  cache_dir: "data/embeddings"
+
+similarity:
+  max_pairs: 10000
+  reference_bin: "2013"
+
+classifier:
+  model_type: "xgboost"
+  training_data:
+    human_sources: ["wikipedia_pre_2020", "cc_pre_2020"]
+    synthetic_sources: ["gpt2_generated"]
+    n_train: 50000
+    val_split: 0.15
+  hyperparameters:
+    n_estimators: 500
+    max_depth: 8
+    learning_rate: 0.05
+    subsample: 0.8
+
+perplexity:
+  model_name: "gpt2"
+  stride: 512
+  chunk_size: 256
+
+reserve:
+  threshold: 0.90
+  min_document_length: 500
+  max_document_length: 500000
+  deduplicate: true
+  dedup_threshold: 0.95
+
+reporting:
+  output_format: "markdown"
+  figure_dpi: 150
+  figure_format: "png"
