@@ -6,6 +6,11 @@ Usage
     python scripts/run_audit.py --config configs/default.yaml --steps all
     python scripts/run_audit.py --steps download,embed,features
     python scripts/run_audit.py --dry-run
+
+NOTE: Imports are deferred into each step function to avoid a known conflict
+between xgboost and torch GPT-2 inference on macOS ARM64.  The ``features``
+step (which runs GPT-2 perplexity scoring) must execute before xgboost is
+loaded into the process.
 """
 
 from __future__ import annotations
@@ -15,7 +20,7 @@ import logging
 import pickle
 import sys
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 import numpy as np
 import pandas as pd
@@ -31,19 +36,7 @@ _PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
-from src.classifier.features.ensemble import build_feature_matrix
-from src.classifier.features.perplexity import PerplexityScorer
-from src.classifier.features.watermark import WatermarkDetector
-from src.classifier.model import ContaminationClassifier
 from src.data.common_crawl import Document
-from src.data.sampler import build_temporal_corpus
-from src.data.timestamper import assign_time_bin
-from src.embeddings.encoder import DocumentEncoder
-from src.embeddings.temporal_curves import compute_temporal_curve, detect_inflection_point
-from src.reporting.summary import generate_audit_report
-from src.reserve.export import export_reserve
-from src.reserve.filter import compute_alpha_t, filter_to_reserve
-from src.reserve.quality import apply_quality_filters
 
 # ---------------------------------------------------------------------------
 # Logging
@@ -122,12 +115,14 @@ def _flatten_corpus(corpus: dict[str, list[Document]]) -> list[Document]:
 
 
 # ---------------------------------------------------------------------------
-# Pipeline steps
+# Pipeline steps — imports are deferred to avoid xgboost/torch conflicts
 # ---------------------------------------------------------------------------
 
 
 def step_download(cfg: dict, output_dir: Path) -> None:
     """Step 1: Download Wikipedia and Common Crawl data."""
+    from src.data.sampler import build_temporal_corpus
+
     console.rule("[bold blue]Step 1: Download Data")
 
     sampling_cfg = cfg.get("sampling", {})
@@ -156,6 +151,9 @@ def step_download(cfg: dict, output_dir: Path) -> None:
 
 def step_embed(cfg: dict, output_dir: Path) -> None:
     """Step 2: Compute embeddings for all documents."""
+    from src.embeddings.encoder import DocumentEncoder
+    from src.embeddings.temporal_curves import compute_temporal_curve
+
     console.rule("[bold blue]Step 2: Compute Embeddings")
 
     corpus_path = output_dir / "corpus.pkl"
@@ -202,7 +200,16 @@ def step_embed(cfg: dict, output_dir: Path) -> None:
 
 
 def step_features(cfg: dict, output_dir: Path) -> None:
-    """Step 3: Extract perplexity, watermark, and stylometric features."""
+    """Step 3: Extract perplexity, watermark, and stylometric features.
+
+    IMPORTANT: This step must run BEFORE step_train/step_classify/step_filter
+    because those steps import xgboost, which conflicts with torch GPT-2
+    inference on macOS ARM64.
+    """
+    from src.classifier.features.ensemble import build_feature_matrix
+    from src.classifier.features.perplexity import PerplexityScorer
+    from src.classifier.features.watermark import WatermarkDetector
+
     console.rule("[bold blue]Step 3: Extract Features")
 
     docs_path = output_dir / "all_documents.pkl"
@@ -237,13 +244,13 @@ def step_features(cfg: dict, output_dir: Path) -> None:
 
 def step_train(cfg: dict, output_dir: Path) -> None:
     """Step 4: Train the contamination classifier."""
+    from src.classifier.model import ContaminationClassifier
+
     console.rule("[bold blue]Step 4: Train Classifier")
 
     features_path = output_dir / "feature_matrix.parquet"
     feature_matrix = pd.read_parquet(features_path)
 
-    # Load labels -- in a real pipeline the labels come from the config.
-    # For now, look for a labels file. If not found, generate heuristic labels.
     labels_path = output_dir / "labels.csv"
     if labels_path.exists():
         labels_df = pd.read_csv(labels_path)
@@ -277,6 +284,8 @@ def step_train(cfg: dict, output_dir: Path) -> None:
 
 def step_classify(cfg: dict, output_dir: Path) -> None:
     """Step 5: Score all documents with the trained classifier."""
+    from src.classifier.model import ContaminationClassifier
+
     console.rule("[bold blue]Step 5: Classify Documents")
 
     features_path = output_dir / "feature_matrix.parquet"
@@ -307,6 +316,11 @@ def step_classify(cfg: dict, output_dir: Path) -> None:
 
 def step_filter(cfg: dict, output_dir: Path) -> None:
     """Step 6: Apply threshold + quality filters to build reserve."""
+    from src.classifier.model import ContaminationClassifier
+    from src.reserve.export import export_reserve
+    from src.reserve.filter import compute_alpha_t, filter_to_reserve
+    from src.reserve.quality import apply_quality_filters
+
     console.rule("[bold blue]Step 6: Filter to Reserve")
 
     docs_path = output_dir / "all_documents.pkl"
@@ -322,7 +336,6 @@ def step_filter(cfg: dict, output_dir: Path) -> None:
     reserve_cfg = cfg.get("reserve", {})
     threshold = reserve_cfg.get("threshold", 0.90)
 
-    # Apply classifier threshold filter
     reserve_docs = filter_to_reserve(
         documents=all_docs,
         classifier=classifier,
@@ -334,7 +347,6 @@ def step_filter(cfg: dict, output_dir: Path) -> None:
     embeddings_path = output_dir / "embeddings.npy"
     embeddings = np.load(embeddings_path)
 
-    # Build embeddings for reserve docs only
     reserve_ids = {doc.doc_id for doc in reserve_docs}
     reserve_indices = [
         i for i, doc in enumerate(all_docs) if doc.doc_id in reserve_ids
@@ -351,14 +363,11 @@ def step_filter(cfg: dict, output_dir: Path) -> None:
         reserve_docs, reserve_embeddings, quality_config,
     )
 
-    # Compute alpha_t
     alpha_t = compute_alpha_t(len(all_docs), len(reserve_docs))
 
-    # Save reserve
     reserve_dir = output_dir / "reserve"
     _save_documents(reserve_docs, reserve_dir / "reserve_documents.pkl")
 
-    # Export
     export_reserve(
         documents=reserve_docs,
         output_dir=reserve_dir,
@@ -375,6 +384,9 @@ def step_filter(cfg: dict, output_dir: Path) -> None:
 
 def step_report(cfg: dict, output_dir: Path) -> None:
     """Step 7: Generate temporal curves and summary report."""
+    from src.embeddings.temporal_curves import detect_inflection_point
+    from src.reporting.summary import generate_audit_report
+
     console.rule("[bold blue]Step 7: Generate Report")
 
     curve_path = output_dir / "temporal_curve.csv"
@@ -389,7 +401,6 @@ def step_report(cfg: dict, output_dir: Path) -> None:
     with open(summary_path) as f:
         reserve_summary = json.load(f)
 
-    # Detect inflection point if enough bins
     if len(curve_df) >= 3:
         try:
             inflection_bin = detect_inflection_point(curve_df)

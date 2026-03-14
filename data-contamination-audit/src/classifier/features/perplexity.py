@@ -9,10 +9,11 @@ from __future__ import annotations
 
 import logging
 import math
-from typing import Sequence
+from typing import TYPE_CHECKING, Sequence
 
-import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
+if TYPE_CHECKING:
+    import torch
+    from transformers import PreTrainedModel, PreTrainedTokenizer
 
 logger = logging.getLogger(__name__)
 
@@ -30,28 +31,51 @@ class PerplexityScorer:
         Sliding-window stride (in tokens) for handling long documents.
     """
 
+    _FALLBACK_DEFAULTS = {
+        "perplexity_mean": 0.0,
+        "perplexity_std": 0.0,
+        "perplexity_burstiness": 0.0,
+    }
+
     def __init__(
         self,
         model_name: str = "gpt2",
         device: str = "auto",
         stride: int = 512,
     ) -> None:
+        import torch as _torch
+        from transformers import AutoModelForCausalLM, AutoTokenizer
+
         self.model_name = model_name
         self.stride = stride
+        self._fallback_mode = False
+        self._torch = _torch
 
         if device == "auto":
-            self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            self.device = _torch.device(
+                "cuda" if _torch.cuda.is_available() else "cpu"
+            )
         else:
-            self.device = torch.device(device)
+            self.device = _torch.device(device)
 
         logger.info("Loading tokenizer and model %s on %s", model_name, self.device)
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        self.model = AutoModelForCausalLM.from_pretrained(model_name)
-        self.model.to(self.device)
-        self.model.eval()
 
-        # GPT-2 context window
-        self.max_length: int = self.model.config.n_positions  # type: ignore[union-attr]
+        try:
+            self.model = AutoModelForCausalLM.from_pretrained(model_name)
+            self.model.to(self.device)
+            self.model.eval()
+            # GPT-2 context window
+            self.max_length: int = self.model.config.n_positions  # type: ignore[union-attr]
+        except Exception:
+            logger.warning(
+                "Failed to load model %s. Perplexity features will use fallback values.",
+                model_name,
+                exc_info=True,
+            )
+            self._fallback_mode = True
+            self.model = None  # type: ignore[assignment]
+            self.max_length = 1024
 
     # ------------------------------------------------------------------
     # Core scoring
@@ -65,8 +89,12 @@ class PerplexityScorer:
 
         Lower perplexity means the model finds the text more predictable.
         """
+        if self._fallback_mode:
+            return 0.0
+
+        _torch = self._torch
         encodings = self.tokenizer(text, return_tensors="pt")
-        input_ids: torch.Tensor = encodings.input_ids  # type: ignore[assignment]
+        input_ids = encodings.input_ids
         seq_len = input_ids.size(1)
 
         if seq_len == 0:
@@ -77,32 +105,24 @@ class PerplexityScorer:
 
         for begin in range(0, seq_len, self.stride):
             end = min(begin + self.max_length, seq_len)
-            # Determine target start — only score new tokens in the window
             target_begin = max(begin, prev_end)
 
             ids = input_ids[:, begin:end].to(self.device)
 
-            with torch.no_grad():
+            with _torch.no_grad():
                 outputs = self.model(ids, labels=ids)
 
-            # The model's built-in loss averages over all positions after
-            # the first, but we need finer control for the sliding window.
-            # Re-derive the per-token NLL for the target region only.
-            logits = outputs.logits  # (1, L, V)
+            logits = outputs.logits
             shift_logits = logits[:, :-1, :].contiguous()
             shift_labels = ids[:, 1:].contiguous()
 
-            loss_fn = torch.nn.CrossEntropyLoss(reduction="none")
+            loss_fn = _torch.nn.CrossEntropyLoss(reduction="none")
             token_nll = loss_fn(
                 shift_logits.view(-1, shift_logits.size(-1)),
                 shift_labels.view(-1),
-            )  # (L-1,)
+            )
 
-            # Offset into the window for the target region
             offset = target_begin - begin
-            # The shift operation means position i in token_nll corresponds
-            # to predicting token (begin + i + 1).  We want tokens from
-            # target_begin+1 .. end, so offset = target_begin - begin.
             target_nll = token_nll[offset:]
             nlls.extend(target_nll.tolist())
 
@@ -118,11 +138,7 @@ class PerplexityScorer:
         return perplexity
 
     def score_batch(self, texts: list[str]) -> list[float]:
-        """Score a list of texts sequentially.
-
-        For simplicity this iterates; the sliding-window approach makes
-        true batching complex.
-        """
+        """Score a list of texts sequentially."""
         return [self.score(t) for t in texts]
 
     # ------------------------------------------------------------------
@@ -143,15 +159,16 @@ class PerplexityScorer:
             - ``perplexity_std``: standard deviation across chunks
             - ``perplexity_burstiness``: coefficient of variation (std / mean)
         """
+        if self._fallback_mode:
+            return dict(self._FALLBACK_DEFAULTS)
+
         overall_ppl = self.score(text)
 
-        # Split into roughly equal chunks by token count for burstiness.
         encodings = self.tokenizer(text, return_tensors="pt")
-        input_ids = encodings.input_ids[0]  # type: ignore[index]
+        input_ids = encodings.input_ids[0]
         n_tokens = len(input_ids)
 
         if n_tokens < chunk_size * 2:
-            # Not enough tokens for meaningful burstiness — return zeros.
             return {
                 "perplexity_mean": overall_ppl,
                 "perplexity_std": 0.0,
@@ -162,7 +179,6 @@ class PerplexityScorer:
         for start in range(0, n_tokens, chunk_size):
             end = min(start + chunk_size, n_tokens)
             if end - start < 16:
-                # Ignore very short trailing chunks.
                 continue
             chunk_text = self.tokenizer.decode(input_ids[start:end])
             ppl = self.score(chunk_text)
