@@ -153,6 +153,8 @@ class TestPerplexityScorer:
             scorer = PerplexityScorer.__new__(PerplexityScorer)
             scorer.model_name = "gpt2"
             scorer.stride = 512
+            scorer._fallback_mode = False
+            scorer._torch = torch
             scorer.device = torch.device("cpu")
             scorer.tokenizer = mock_tokenizer
             scorer.model = mock_model
@@ -922,6 +924,8 @@ class TestPerplexityScorerMocked:
             scorer = PerplexityScorer.__new__(PerplexityScorer)
             scorer.model_name = "gpt2"
             scorer.stride = 512
+            scorer._fallback_mode = False
+            scorer._torch = mock_torch
             scorer.device = mock_torch.device("cpu")
             scorer.tokenizer = mock_tokenizer
             scorer.model = mock_model
