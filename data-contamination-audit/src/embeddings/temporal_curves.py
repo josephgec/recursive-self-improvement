@@ -202,3 +202,172 @@ def detect_inflection_point(curve: pd.DataFrame) -> str:
         second_deriv[max_idx],
     )
     return inflection_bin
+
+
+def compute_per_source_curves(
+    corpus: dict[str, list[Document]],
+    encoder: DocumentEncoder,
+    reference_bin: str | None = None,
+) -> dict[str, pd.DataFrame]:
+    """Compute temporal curves for each document source independently.
+
+    Parameters
+    ----------
+    corpus:
+        Mapping from bin label to documents (as used by
+        :func:`compute_temporal_curve`).
+    encoder:
+        A :class:`DocumentEncoder` for embedding.
+    reference_bin:
+        The bin against which cross-corpus similarity is measured.  If
+        ``None``, the lexicographically smallest bin is used.
+
+    Returns
+    -------
+    dict[str, pd.DataFrame]
+        Mapping from source name (e.g. ``"wikipedia"``) to a curve
+        DataFrame.  Bins with fewer than 5 documents for a given source
+        are skipped for that source.
+    """
+    # Split corpus by source within each bin
+    from collections import defaultdict
+
+    source_corpora: dict[str, dict[str, list[Document]]] = defaultdict(dict)
+    for bin_label, docs in corpus.items():
+        by_source: dict[str, list[Document]] = defaultdict(list)
+        for doc in docs:
+            by_source[doc.source].append(doc)
+        for source_name, source_docs in by_source.items():
+            if len(source_docs) >= 5:
+                source_corpora[source_name][bin_label] = source_docs
+            else:
+                logger.info(
+                    "Skipping source %r in bin %r: only %d documents (< 5)",
+                    source_name,
+                    bin_label,
+                    len(source_docs),
+                )
+
+    result: dict[str, pd.DataFrame] = {}
+    for source_name, sub_corpus in sorted(source_corpora.items()):
+        logger.info(
+            "Computing temporal curve for source %r (%d bins)",
+            source_name,
+            len(sub_corpus),
+        )
+        curve = compute_temporal_curve(sub_corpus, encoder, reference_bin=reference_bin)
+        result[source_name] = curve
+
+    return result
+
+
+def detect_inflection_with_ci(
+    curve: pd.DataFrame,
+    n_bootstrap: int = 200,
+    seed: int = 42,
+) -> dict:
+    """Identify the inflection point with a bootstrap confidence interval.
+
+    Parameters
+    ----------
+    curve:
+        A DataFrame as returned by :func:`compute_temporal_curve`,
+        expected to be sorted by ``bin``.
+    n_bootstrap:
+        Number of bootstrap iterations.
+    seed:
+        Random seed for reproducibility.
+
+    Returns
+    -------
+    dict
+        Keys:
+
+        - **bin_label** — the modal inflection bin label
+        - **second_derivative** — second derivative value at the inflection
+        - **ci_lower** — bin label at the 5th percentile of bootstrap
+          inflection points
+        - **ci_upper** — bin label at the 95th percentile of bootstrap
+          inflection points
+        - **confidence** — fraction of bootstrap samples that agree with the
+          modal inflection point
+
+    Raises
+    ------
+    ValueError
+        If the curve has fewer than 3 rows.
+    """
+    if len(curve) < 3:
+        raise ValueError(
+            f"Need at least 3 bins for inflection detection, got {len(curve)}"
+        )
+
+    similarity = curve["mean_similarity"].values.astype(np.float64)
+    bins = curve["bin"].astype(str).values
+
+    # Compute the canonical inflection point and its second-derivative value
+    smoothed = (
+        pd.Series(similarity)
+        .rolling(window=3, center=True, min_periods=1)
+        .mean()
+        .values
+    )
+    first_deriv = np.diff(smoothed)
+    second_deriv = np.diff(first_deriv)
+    max_idx = int(np.argmax(second_deriv))
+    inflection_bin_idx = max_idx + 1
+    inflection_second_deriv = float(second_deriv[max_idx])
+
+    # Bootstrap: add noise, recompute inflection point each time
+    rng = np.random.default_rng(seed)
+    sim_range = similarity.max() - similarity.min()
+    noise_std = 0.01 * sim_range if sim_range > 0 else 0.001
+
+    bootstrap_indices: list[int] = []
+    for _ in range(n_bootstrap):
+        noisy = similarity + rng.normal(0.0, noise_std, size=len(similarity))
+        sm = (
+            pd.Series(noisy)
+            .rolling(window=3, center=True, min_periods=1)
+            .mean()
+            .values
+        )
+        fd = np.diff(sm)
+        sd = np.diff(fd)
+        bi = int(np.argmax(sd)) + 1
+        bootstrap_indices.append(bi)
+
+    bootstrap_indices_arr = np.array(bootstrap_indices)
+
+    # Modal inflection index
+    from collections import Counter
+
+    counts = Counter(bootstrap_indices)
+    modal_idx = counts.most_common(1)[0][0]
+    confidence = counts[modal_idx] / n_bootstrap
+
+    # CI bounds: 5th and 95th percentile of bootstrap inflection indices
+    ci_lower_idx = int(np.percentile(bootstrap_indices_arr, 5))
+    ci_upper_idx = int(np.percentile(bootstrap_indices_arr, 95))
+
+    # Clamp indices to valid range
+    ci_lower_idx = max(0, min(ci_lower_idx, len(bins) - 1))
+    ci_upper_idx = max(0, min(ci_upper_idx, len(bins) - 1))
+    modal_idx = max(0, min(modal_idx, len(bins) - 1))
+
+    result = {
+        "bin_label": str(bins[modal_idx]),
+        "second_derivative": inflection_second_deriv,
+        "ci_lower": str(bins[ci_lower_idx]),
+        "ci_upper": str(bins[ci_upper_idx]),
+        "confidence": confidence,
+    }
+
+    logger.info(
+        "Inflection with CI: bin=%s, CI=[%s, %s], confidence=%.1f%%",
+        result["bin_label"],
+        result["ci_lower"],
+        result["ci_upper"],
+        result["confidence"] * 100,
+    )
+    return result

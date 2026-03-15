@@ -152,7 +152,7 @@ def step_download(cfg: dict, output_dir: Path) -> None:
 def step_embed(cfg: dict, output_dir: Path) -> None:
     """Step 2: Compute embeddings for all documents."""
     from src.embeddings.encoder import DocumentEncoder
-    from src.embeddings.temporal_curves import compute_temporal_curve
+    from src.embeddings.temporal_curves import compute_per_source_curves, compute_temporal_curve
 
     console.rule("[bold blue]Step 2: Compute Embeddings")
 
@@ -189,6 +189,20 @@ def step_embed(cfg: dict, output_dir: Path) -> None:
     curve_df.to_csv(curve_path, index=False)
     logger.info("Saved temporal curve to %s", curve_path)
 
+    # Compute per-source temporal curves
+    per_source = compute_per_source_curves(corpus, encoder, reference_bin=reference_bin)
+    for source_name, source_curve in per_source.items():
+        source_curve_path = output_dir / f"temporal_curve_{source_name}.csv"
+        source_curve.to_csv(source_curve_path, index=False)
+        logger.info("Saved per-source curve for %s to %s", source_name, source_curve_path)
+
+    # Save a manifest of available per-source curves
+    per_source_manifest = list(per_source.keys())
+    manifest_path = output_dir / "per_source_curves.json"
+    with open(manifest_path, "w") as f:
+        json.dump(per_source_manifest, f)
+    logger.info("Saved per-source curves manifest to %s", manifest_path)
+
     # Save flattened docs for subsequent steps
     docs_path = output_dir / "all_documents.pkl"
     _save_documents(all_docs, docs_path)
@@ -219,9 +233,17 @@ def step_features(cfg: dict, output_dir: Path) -> None:
     ppl_model = ppl_cfg.get("model_name", "gpt2")
     stride = ppl_cfg.get("stride", 512)
 
-    perplexity_scorer = PerplexityScorer(model_name=ppl_model, stride=stride)
+    if cfg.get("skip_perplexity", False):
+        logger.info("Skipping perplexity scoring (--skip-perplexity flag set)")
+        perplexity_scorer = None
+        # Still need a tokenizer for the watermark detector.
+        from transformers import AutoTokenizer
+        tokenizer = AutoTokenizer.from_pretrained(ppl_model)
+    else:
+        perplexity_scorer = PerplexityScorer(model_name=ppl_model, stride=stride)
+        tokenizer = perplexity_scorer.tokenizer
+
     watermark_detector = WatermarkDetector()
-    tokenizer = perplexity_scorer.tokenizer
 
     features_cache = output_dir / "features_cache"
     feature_matrix = build_feature_matrix(
@@ -243,43 +265,185 @@ def step_features(cfg: dict, output_dir: Path) -> None:
 
 
 def step_train(cfg: dict, output_dir: Path) -> None:
-    """Step 4: Train the contamination classifier."""
+    """Step 4: Train the contamination classifier with validation."""
+    from sklearn.metrics import (
+        accuracy_score,
+        average_precision_score,
+        f1_score,
+        precision_score,
+        recall_score,
+        roc_auc_score,
+    )
+    from sklearn.model_selection import train_test_split
+
     from src.classifier.model import ContaminationClassifier
 
     console.rule("[bold blue]Step 4: Train Classifier")
 
-    features_path = output_dir / "feature_matrix.parquet"
-    feature_matrix = pd.read_parquet(features_path)
+    # ------------------------------------------------------------------
+    # Resolve features and labels — prefer real training data if available
+    # ------------------------------------------------------------------
+    training_dir = output_dir.parent / "data" / "training"
+    # Also check relative to project root
+    project_training_dir = _PROJECT_ROOT / "data" / "training"
 
-    labels_path = output_dir / "labels.csv"
-    if labels_path.exists():
-        labels_df = pd.read_csv(labels_path)
+    real_labels_path = None
+    real_features_path = None
+
+    for candidate_dir in [training_dir, project_training_dir]:
+        candidate_labels = candidate_dir / "labels.csv"
+        candidate_features = candidate_dir / "features.parquet"
+        if candidate_labels.exists() and candidate_features.exists():
+            real_labels_path = candidate_labels
+            real_features_path = candidate_features
+            break
+
+    if real_features_path is not None and real_labels_path is not None:
+        console.print(
+            f"[bold cyan]Using real training data from:[/bold cyan] "
+            f"{real_features_path.parent}"
+        )
+        feature_matrix = pd.read_parquet(real_features_path)
+        labels_df = pd.read_csv(real_labels_path)
         labels = labels_df["label"]
     else:
-        logger.warning(
-            "No labels file found at %s. Using heuristic labels based on "
-            "stylometric features (vocabulary_richness < median -> synthetic).",
-            labels_path,
-        )
-        median_richness = feature_matrix["vocabulary_richness"].median()
-        labels = (feature_matrix["vocabulary_richness"] < median_richness).astype(int)
+        features_path = output_dir / "feature_matrix.parquet"
+        feature_matrix = pd.read_parquet(features_path)
+
+        labels_path = output_dir / "labels.csv"
+        if labels_path.exists():
+            labels_df = pd.read_csv(labels_path)
+            labels = labels_df["label"]
+        else:
+            logger.warning(
+                "No labels file found at %s. Using heuristic labels based on "
+                "stylometric features (vocabulary_richness < median -> synthetic).",
+                labels_path,
+            )
+            median_richness = feature_matrix["vocabulary_richness"].median()
+            labels = (feature_matrix["vocabulary_richness"] < median_richness).astype(int)
+
+    # ------------------------------------------------------------------
+    # Train/test split: 85% train+val, 15% held-out test
+    # ------------------------------------------------------------------
+    train_val_idx, test_idx = train_test_split(
+        np.arange(len(labels)),
+        test_size=0.15,
+        random_state=42,
+        stratify=labels,
+    )
+
+    features_train_val = feature_matrix.iloc[train_val_idx].reset_index(drop=True)
+    labels_train_val = labels.iloc[train_val_idx].reset_index(drop=True)
+    features_test = feature_matrix.iloc[test_idx].reset_index(drop=True)
+    labels_test = labels.iloc[test_idx].reset_index(drop=True)
 
     cls_cfg = cfg.get("classifier", {})
     hyperparams = cls_cfg.get("hyperparameters", {})
-    val_split = cls_cfg.get("training_data", {}).get("val_split", 0.15)
+    # Internal val_split: 15/85 ~ 0.176 to get ~15% of total as val
+    internal_val_split = round(15.0 / 85.0, 3)
 
     classifier = ContaminationClassifier(model_type="xgboost", **hyperparams)
-    metrics = classifier.train(feature_matrix, labels, val_split=val_split)
+    val_metrics = classifier.train(
+        features_train_val, labels_train_val, val_split=internal_val_split,
+    )
 
     model_path = output_dir / "classifier.joblib"
     classifier.save(model_path)
 
+    # ------------------------------------------------------------------
+    # Evaluate on held-out test set
+    # ------------------------------------------------------------------
+    X_test = ContaminationClassifier._drop_non_features(features_test)
+    y_test = labels_test.values
+    y_test_pred = classifier._model.predict(X_test)
+    y_test_prob = classifier._model.predict_proba(X_test)[:, 1]
+
+    test_metrics = {
+        "accuracy": float(accuracy_score(y_test, y_test_pred)),
+        "precision": float(precision_score(y_test, y_test_pred, zero_division=0)),
+        "recall": float(recall_score(y_test, y_test_pred, zero_division=0)),
+        "f1": float(f1_score(y_test, y_test_pred, average="macro", zero_division=0)),
+        "auroc": float(roc_auc_score(y_test, y_test_prob)),
+        "auprc": float(average_precision_score(y_test, y_test_prob)),
+    }
+
+    # ------------------------------------------------------------------
+    # Per-bin evaluation
+    # ------------------------------------------------------------------
+    per_bin_metrics_list: list[dict] = []
+    docs_path = output_dir / "all_documents.pkl"
+    if docs_path.exists() and "doc_id" in feature_matrix.columns:
+        from scripts.train_classifier import per_bin_evaluation
+
+        test_doc_ids = feature_matrix.iloc[test_idx]["doc_id"].reset_index(drop=True)
+        per_bin_df = per_bin_evaluation(
+            classifier, features_test, labels_test,
+            test_doc_ids, docs_path,
+        )
+        if len(per_bin_df) > 0:
+            per_bin_metrics_list = per_bin_df.to_dict("records")
+
+    # ------------------------------------------------------------------
+    # Feature importance
+    # ------------------------------------------------------------------
+    importance = classifier.feature_importance()
+    importance_path = output_dir / "feature_importance.csv"
+    importance.to_csv(importance_path, index=False)
+
+    # ------------------------------------------------------------------
+    # Calibration
+    # ------------------------------------------------------------------
+    from src.classifier.calibration import calibrate, plot_calibration_curve
+
+    # Recover the internal validation portion for calibration fitting
+    _, cal_idx = train_test_split(
+        np.arange(len(labels_train_val)),
+        test_size=internal_val_split,
+        random_state=42,
+        stratify=labels_train_val,
+    )
+    features_cal = features_train_val.iloc[cal_idx].reset_index(drop=True)
+    labels_cal = labels_train_val.iloc[cal_idx].reset_index(drop=True)
+
+    calibrated = calibrate(classifier, features_cal, labels_cal)
+    calibrated_path = output_dir / "classifier_calibrated.joblib"
+    calibrated.save(calibrated_path)
+
+    cal_probs = calibrated.predict_proba(features_test)[:, 1]
+    cal_curve_path = output_dir / "calibration_curve.png"
+    plot_calibration_curve(y_test, cal_probs, cal_curve_path)
+
+    # ------------------------------------------------------------------
+    # Save validation report
+    # ------------------------------------------------------------------
+    n_internal_val = len(cal_idx)
+    n_internal_train = len(labels_train_val) - n_internal_val
+
+    validation_report = {
+        "test_metrics": test_metrics,
+        "per_bin_metrics": per_bin_metrics_list,
+        "feature_importance": importance.to_dict("records"),
+        "n_train": int(n_internal_train),
+        "n_val": int(n_internal_val),
+        "n_test": int(len(labels_test)),
+    }
+
+    report_path = output_dir / "validation_report.json"
+    with open(report_path, "w") as f:
+        json.dump(validation_report, f, indent=2)
+    logger.info("Saved validation report to %s", report_path)
+
+    # Also save backward-compatible classifier_metrics.json
     metrics_path = output_dir / "classifier_metrics.json"
     with open(metrics_path, "w") as f:
-        json.dump(metrics, f, indent=2)
+        json.dump(val_metrics, f, indent=2)
     logger.info("Saved classifier metrics to %s", metrics_path)
 
-    console.print(f"[green]Classifier trained. Accuracy: {metrics['accuracy']:.4f}[/green]")
+    console.print(
+        f"[green]Classifier trained. Test accuracy: "
+        f"{test_metrics['accuracy']:.4f}[/green]"
+    )
 
 
 def step_classify(cfg: dict, output_dir: Path) -> None:
@@ -384,7 +548,8 @@ def step_filter(cfg: dict, output_dir: Path) -> None:
 
 def step_report(cfg: dict, output_dir: Path) -> None:
     """Step 7: Generate temporal curves and summary report."""
-    from src.embeddings.temporal_curves import detect_inflection_point
+    from src.embeddings.temporal_curves import detect_inflection_point, detect_inflection_with_ci
+    from src.reporting.curves import LLM_RELEASES, plot_cross_source_comparison
     from src.reporting.summary import generate_audit_report
 
     console.rule("[bold blue]Step 7: Generate Report")
@@ -408,13 +573,55 @@ def step_report(cfg: dict, output_dir: Path) -> None:
         except ValueError:
             pass
 
+    # Compute inflection point with bootstrap confidence interval
+    inflection_ci = None
+    if len(curve_df) >= 3:
+        try:
+            inflection_ci = detect_inflection_with_ci(curve_df)
+        except ValueError:
+            logger.warning("Could not compute inflection CI (too few bins)")
+
+    # Load per-source curves if available
+    per_source_curves: dict[str, pd.DataFrame] = {}
+    manifest_path = output_dir / "per_source_curves.json"
+    if manifest_path.exists():
+        with open(manifest_path) as f:
+            source_names = json.load(f)
+        for source_name in source_names:
+            source_curve_path = output_dir / f"temporal_curve_{source_name}.csv"
+            if source_curve_path.exists():
+                per_source_curves[source_name] = pd.read_csv(source_curve_path)
+
+    # Generate cross-source comparison plot if per-source data exists
     report_dir = output_dir / "report"
+    report_dir.mkdir(parents=True, exist_ok=True)
+    has_per_source = len(per_source_curves) > 1
+    if has_per_source:
+        cross_source_img = report_dir / "cross_source_comparison.png"
+        plot_cross_source_comparison(
+            per_source_curves, cross_source_img, llm_releases=LLM_RELEASES,
+        )
+
+    # Pass LLM_RELEASES to config so generate_audit_report can use them
+    cfg["llm_releases"] = LLM_RELEASES
+
+    # Load validation report if it exists
+    validation_report = None
+    validation_report_path = output_dir / "validation_report.json"
+    if validation_report_path.exists():
+        with open(validation_report_path) as f:
+            validation_report = json.load(f)
+        logger.info("Loaded validation report from %s", validation_report_path)
+
     report_path = generate_audit_report(
         config=cfg,
         curve_df=curve_df,
         classifier_metrics=classifier_metrics,
         reserve_summary=reserve_summary,
         output_dir=report_dir,
+        validation_report=validation_report,
+        inflection_ci=inflection_ci,
+        per_source_curves=has_per_source,
     )
 
     console.print(f"[green]Audit report generated at {report_path}[/green]")
@@ -465,6 +672,11 @@ def main(
         "--dry-run",
         help="Print what would be done without executing.",
     ),
+    skip_perplexity: bool = typer.Option(
+        False,
+        "--skip-perplexity",
+        help="Skip GPT-2 perplexity scoring for faster runs.",
+    ),
     verbose: bool = typer.Option(
         False,
         "--verbose",
@@ -477,6 +689,7 @@ def main(
 
     # Load configuration
     cfg = _load_config(config)
+    cfg["skip_perplexity"] = skip_perplexity
     logger.info("Loaded config from %s", config)
 
     # Resolve output directory

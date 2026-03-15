@@ -496,11 +496,17 @@ class TestFetchWarcRecord:
         mock_record.content_stream.return_value.read.return_value = b"<html>hello</html>"
         mock_archive_iter.return_value = [mock_record]
 
-        mock_extract.return_value = "Extracted text content"
+        mock_extract.return_value = (
+            "This is a full article with multiple sentences. "
+            "It contains enough content to pass quality filters. "
+            "The third sentence ensures the minimum threshold is met. "
+            "And a fourth for good measure."
+        )
 
         result = _fetch_warc_record("crawl-data/segment/warc.gz", 100, 500)
 
-        assert result == "Extracted text content"
+        assert result is not None
+        assert "full article" in result
         mock_req.assert_called_once_with(
             "GET",
             "https://data.commoncrawl.org/crawl-data/segment/warc.gz",

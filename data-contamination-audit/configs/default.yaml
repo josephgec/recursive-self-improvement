@@ -40,7 +40,7 @@ perplexity:
 
 reserve:
   threshold: 0.90
-  min_document_length: 500
+  min_document_length: 200
   max_document_length: 500000
   deduplicate: true
   dedup_threshold: 0.95

@@ -12,6 +12,7 @@ import hashlib
 import io
 import logging
 import random
+import re
 import time
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -25,6 +26,33 @@ import yaml
 from warcio.archiveiterator import ArchiveIterator
 
 logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# URL content-quality heuristics
+# ---------------------------------------------------------------------------
+
+_CONTENT_PREFER = re.compile(r"/(article|blog|news|post|story|guide|review|tutorial|report)/", re.I)
+_CONTENT_REJECT = re.compile(r"/(login|cart|checkout|search|account|register|signup|admin|api|tag|category)/", re.I)
+
+_MIN_SENTENCE_RE = re.compile(r"[.!?]+\s+")
+
+
+def _score_url(url: str) -> int:
+    """Return 2 if *url* matches a preferred content pattern, 0 if it matches
+    a rejected pattern, and 1 otherwise."""
+    if _CONTENT_REJECT.search(url):
+        return 0
+    if _CONTENT_PREFER.search(url):
+        return 2
+    return 1
+
+
+def _passes_quality_check(text: str) -> bool:
+    """Return ``True`` if *text* contains at least 3 sentences."""
+    # Split on sentence-ending punctuation followed by whitespace.
+    sentences = _MIN_SENTENCE_RE.split(text)
+    return len(sentences) >= 3
+
 
 # ---------------------------------------------------------------------------
 # Shared Document dataclass
@@ -182,7 +210,10 @@ def _fetch_warc_record(warc_filename: str, offset: int, length: int) -> str | No
                 html = html_bytes.decode("utf-8", errors="replace")
                 text = trafilatura.extract(html)
                 if text and len(text.strip()) > 0:
-                    return text.strip()
+                    text = text.strip()
+                    if not _passes_quality_check(text):
+                        return None
+                    return text
     except Exception:
         logger.exception("Error parsing WARC record from %s", url)
 
@@ -361,7 +392,23 @@ def _sample_via_index_api(
         import json
 
         lines = resp.text.strip().splitlines()
-        rng.shuffle(lines)
+
+        # Pre-parse, score by URL quality, reject bad URLs, prefer good ones.
+        scored_lines: list[tuple[int, str]] = []
+        for ln in lines:
+            try:
+                rec = json.loads(ln)
+            except json.JSONDecodeError:
+                continue
+            url = rec.get("url", "")
+            score = _score_url(url) if url else 1
+            if score == 0:
+                continue  # reject login/cart/admin/... URLs
+            scored_lines.append((score, ln))
+
+        # Sort preferred URLs first, then shuffle within each tier.
+        scored_lines.sort(key=lambda t: t[0], reverse=True)
+        lines = [ln for _, ln in scored_lines]
 
         for line in lines:
             if len(documents) >= n:

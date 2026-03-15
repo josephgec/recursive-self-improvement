@@ -8,3 +8,6 @@ classifier:
 
 embeddings:
   batch_size: 32
+
+reserve:
+  min_document_length: 200

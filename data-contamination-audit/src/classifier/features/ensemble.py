@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 def extract_all_features(
     doc: Document,
-    perplexity_scorer: PerplexityScorer,
+    perplexity_scorer: PerplexityScorer | None,
     watermark_detector: WatermarkDetector,
     tokenizer: Any,
 ) -> dict[str, float]:
@@ -35,7 +35,8 @@ def extract_all_features(
     doc:
         The document to featurise.
     perplexity_scorer:
-        Initialised :class:`PerplexityScorer`.
+        Initialised :class:`PerplexityScorer`, or ``None`` to skip
+        perplexity scoring and use fallback defaults instead.
     watermark_detector:
         Initialised :class:`WatermarkDetector`.
     tokenizer:
@@ -51,7 +52,10 @@ def extract_all_features(
     features: dict[str, float] = {}
 
     # -- Perplexity features -----------------------------------------------
-    ppl_feats = perplexity_scorer.compute_features(doc.text)
+    if perplexity_scorer is not None:
+        ppl_feats = perplexity_scorer.compute_features(doc.text)
+    else:
+        ppl_feats = dict(PerplexityScorer._FALLBACK_DEFAULTS)
     features.update(ppl_feats)
 
     # -- Watermark features ------------------------------------------------
@@ -68,7 +72,7 @@ def extract_all_features(
 
 def build_feature_matrix(
     documents: list[Document],
-    perplexity_scorer: PerplexityScorer,
+    perplexity_scorer: PerplexityScorer | None,
     watermark_detector: WatermarkDetector,
     tokenizer: Any,
     cache_dir: str | Path | None = None,
@@ -81,7 +85,8 @@ def build_feature_matrix(
     documents:
         Documents to featurise.
     perplexity_scorer:
-        Initialised :class:`PerplexityScorer`.
+        Initialised :class:`PerplexityScorer`, or ``None`` to skip
+        perplexity scoring and use fallback defaults.
     watermark_detector:
         Initialised :class:`WatermarkDetector`.
     tokenizer:

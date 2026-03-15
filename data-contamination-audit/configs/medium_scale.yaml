@@ -1,0 +1,17 @@
+sampling:
+  n_per_bin: 500
+  bin_size: "year"
+  bins: ["2013", "2014", "2015", "2016", "2017", "2018",
+         "2019", "2020", "2021", "2022", "2023", "2024", "2025"]
+  sources: ["common_crawl"]
+
+embeddings:
+  batch_size: 128
+
+classifier:
+  training_data:
+    n_train: 5000
+    val_split: 0.15
+
+reserve:
+  min_document_length: 200

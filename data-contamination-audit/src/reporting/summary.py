@@ -14,7 +14,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from src.reporting.curves import plot_contamination_rate, plot_temporal_similarity_curve
+from src.reporting.curves import LLM_RELEASES, plot_contamination_rate, plot_temporal_similarity_curve
 
 logger = logging.getLogger(__name__)
 
@@ -114,12 +114,89 @@ def _build_recommendations(alpha_t: float, metrics: dict[str, float]) -> str:
     return "\n".join(recs)
 
 
+def _build_validation_section(validation_report: dict) -> str:
+    """Return a Markdown section for classifier validation results.
+
+    Parameters
+    ----------
+    validation_report:
+        The parsed ``validation_report.json`` dict with keys
+        ``test_metrics``, ``per_bin_metrics``, ``feature_importance``,
+        ``n_train``, ``n_val``, ``n_test``.
+
+    Returns
+    -------
+    str
+        Markdown text for the validation section.
+    """
+    parts: list[str] = []
+
+    # Split sizes
+    n_train = validation_report.get("n_train", "?")
+    n_val = validation_report.get("n_val", "?")
+    n_test = validation_report.get("n_test", "?")
+    parts.append(
+        f"Data split: **{n_train}** train / **{n_val}** validation / "
+        f"**{n_test}** held-out test.\n"
+    )
+
+    # Test set metrics table
+    test_metrics = validation_report.get("test_metrics", {})
+    if test_metrics:
+        parts.append("### Test Set Metrics\n")
+        parts.append(_build_classifier_table(test_metrics))
+        parts.append("")
+
+    # Per-bin accuracy table
+    per_bin = validation_report.get("per_bin_metrics", [])
+    if per_bin:
+        parts.append("### Per-Bin Accuracy\n")
+        parts.append("| Bin | N docs | Accuracy | Precision | Recall | F1 |")
+        parts.append("|-----|--------|----------|-----------|--------|-----|")
+        for row in per_bin:
+            parts.append(
+                f"| {row.get('bin', '')} "
+                f"| {row.get('n_docs', '')} "
+                f"| {_fmt(row.get('accuracy', 0))} "
+                f"| {_fmt(row.get('precision', 0))} "
+                f"| {_fmt(row.get('recall', 0))} "
+                f"| {_fmt(row.get('f1', 0))} |"
+            )
+        parts.append("")
+
+    # Calibration curve reference
+    parts.append("### Calibration\n")
+    parts.append(
+        "A reliability diagram showing predicted vs. actual probability "
+        "is available below.\n"
+    )
+    parts.append("![Calibration Curve](../calibration_curve.png)\n")
+
+    # Top 10 feature importance
+    feat_imp = validation_report.get("feature_importance", [])
+    if feat_imp:
+        top10 = feat_imp[:10]
+        parts.append("### Top 10 Features\n")
+        parts.append("| Rank | Feature | Importance |")
+        parts.append("|------|---------|------------|")
+        for rank, row in enumerate(top10, start=1):
+            name = row.get("feature", "unknown")
+            imp = row.get("importance", 0.0)
+            parts.append(f"| {rank} | {name} | {_fmt(imp)} |")
+        parts.append("")
+
+    return "\n".join(parts)
+
+
 def generate_audit_report(
     config: dict,
     curve_df: pd.DataFrame,
     classifier_metrics: dict,
     reserve_summary: dict,
     output_dir: Path,
+    validation_report: dict | None = None,
+    inflection_ci: dict | None = None,
+    per_source_curves: bool = False,
 ) -> Path:
     """Produce a Markdown audit report with embedded chart references.
 
@@ -146,6 +223,16 @@ def generate_audit_report(
     output_dir:
         Directory where the report Markdown and any generated images will
         be written (created if necessary).
+    validation_report:
+        Optional dict parsed from ``validation_report.json``.  If provided,
+        a "Classifier Validation" section is inserted into the report.
+    inflection_ci:
+        Optional dict from
+        :func:`src.embeddings.temporal_curves.detect_inflection_with_ci`
+        with keys ``bin_label``, ``second_derivative``, ``ci_lower``,
+        ``ci_upper``, ``confidence``.
+    per_source_curves:
+        Whether a cross-source comparison plot was generated.
 
     Returns
     -------
@@ -162,7 +249,12 @@ def generate_audit_report(
     contamination_img = output_dir / "contamination_rate.png"
 
     inflection_bin = config.get("inflection_bin")
-    plot_temporal_similarity_curve(curve_df, curve_img, inflection_bin=inflection_bin)
+    llm_releases = config.get("llm_releases")
+    plot_temporal_similarity_curve(
+        curve_df, curve_img,
+        inflection_bin=inflection_bin,
+        llm_releases=llm_releases,
+    )
 
     # Compute per-bin synthetic fractions from the reserve summary
     temporal_dist = reserve_summary.get("temporal_distribution", {})
@@ -225,6 +317,45 @@ def generate_audit_report(
     )
     sections.append(f"![Temporal Similarity Curve]({curve_img.name})\n")
 
+    if llm_releases:
+        release_names = ", ".join(
+            f"{r['name']} ({r['date']})" for r in llm_releases
+        )
+        sections.append(
+            f"**LLM Timeline:** The chart is annotated with major LLM release "
+            f"dates: {release_names}. Vertical dotted lines mark the "
+            f"corresponding time bins for reference.\n"
+        )
+
+    # 2a. Inflection Analysis (optional)
+    if inflection_ci is not None:
+        sections.append("### Inflection Analysis\n")
+        sections.append(
+            f"- **Inflection point:** {inflection_ci['bin_label']}"
+        )
+        sections.append(
+            f"- **Second derivative:** {_fmt(inflection_ci['second_derivative'], 6)}"
+        )
+        sections.append(
+            f"- **95% CI:** [{inflection_ci['ci_lower']}, "
+            f"{inflection_ci['ci_upper']}]"
+        )
+        sections.append(
+            f"- **Bootstrap confidence:** "
+            f"{inflection_ci['confidence'] * 100:.1f}% of bootstrap samples "
+            f"agree on the modal inflection bin\n"
+        )
+
+    # 2b. Cross-Source Comparison (optional)
+    if per_source_curves:
+        sections.append("### Cross-Source Comparison\n")
+        sections.append(
+            "The following chart overlays similarity curves for each data "
+            "source (e.g., Wikipedia vs. Common Crawl), enabling direct "
+            "comparison of contamination trends across sources.\n"
+        )
+        sections.append("![Cross-Source Comparison](cross_source_comparison.png)\n")
+
     # 3. Contamination Rate by Year
     sections.append("## 3. Contamination Rate by Year\n")
     sections.append(
@@ -238,13 +369,23 @@ def generate_audit_report(
     sections.append(_build_classifier_table(classifier_metrics))
     sections.append("")
 
-    # 5. Feature Importance
-    sections.append("## 5. Feature Importance Ranking\n")
+    # Section numbering shifts by 1 when validation report is present
+    if validation_report is not None:
+        next_num = 5
+        sections.append(f"## {next_num}. Classifier Validation\n")
+        sections.append(_build_validation_section(validation_report))
+        next_num += 1
+    else:
+        next_num = 5
+
+    # Feature Importance
+    sections.append(f"## {next_num}. Feature Importance Ranking\n")
     sections.append(_build_feature_importance_section(classifier_metrics))
     sections.append("")
+    next_num += 1
 
-    # 6. Reserve Statistics
-    sections.append("## 6. Reserve Statistics\n")
+    # Reserve Statistics
+    sections.append(f"## {next_num}. Reserve Statistics\n")
     sections.append(f"- **Reserve size:** {reserve_size:,} documents")
     sections.append(f"- **Authenticity threshold:** {threshold}")
     sections.append(f"- **Mean authenticity score:** {_fmt(mean_auth)}")
@@ -258,8 +399,9 @@ def generate_audit_report(
             sections.append(f"- {bin_label}: {count:,}")
     sections.append("")
 
-    # 7. Recommendations
-    sections.append("## 7. Recommendations\n")
+    # Recommendations
+    next_num += 1
+    sections.append(f"## {next_num}. Recommendations\n")
     sections.append(_build_recommendations(alpha_t, classifier_metrics))
     sections.append("")
 
