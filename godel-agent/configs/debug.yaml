@@ -1,0 +1,11 @@
+agent:
+  llm_provider: "mock"
+
+meta_learning:
+  max_iterations: 5
+  warmup_iterations: 2
+  tasks_per_iteration: 5
+  modification_cooldown: 1
+
+validation:
+  min_pass_rate: 0.60

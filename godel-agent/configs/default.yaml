@@ -1,0 +1,46 @@
+project:
+  name: "godel-agent"
+  seed: 42
+  output_dir: "data"
+
+agent:
+  llm_provider: "mock"
+  llm_model: "gpt-4o"
+  temperature: 0.7
+  max_tokens: 4096
+  system_prompt: "You are a helpful mathematical problem solver. Think step by step and provide your answer."
+
+meta_learning:
+  max_iterations: 50
+  warmup_iterations: 5
+  tasks_per_iteration: 10
+  modification_cooldown: 2
+  num_examples: 3
+
+modification:
+  max_concurrent_changes: 1
+  require_deliberation: true
+  deliberation_depth: 2
+  allowed_targets:
+    - "prompt_strategy"
+    - "few_shot_selector"
+    - "reasoning_strategy"
+  forbidden_targets:
+    - "validation.suite"
+    - "validation.runner"
+    - "audit.logger"
+    - "rollback.mechanism"
+  max_complexity_ratio: 5.0
+
+validation:
+  suite: "core"
+  min_pass_rate: 0.90
+  performance_threshold: -0.05
+  auto_rollback: true
+
+audit:
+  log_dir: "data/audit_logs"
+  log_diffs: true
+  log_reasoning: true
+  log_runtime_state: true
+  max_log_size_mb: 100

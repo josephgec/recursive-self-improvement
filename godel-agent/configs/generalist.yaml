@@ -1,0 +1,7 @@
+agent:
+  llm_provider: "openai"
+  llm_model: "gpt-4o"
+
+meta_learning:
+  max_iterations: 100
+  tasks_per_iteration: 15
