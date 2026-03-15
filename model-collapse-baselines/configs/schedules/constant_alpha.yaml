@@ -1,0 +1,3 @@
+schedule:
+  type: "constant"
+  alpha: 0.5

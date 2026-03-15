@@ -1,0 +1,4 @@
+schedule:
+  type: "exponential"
+  alpha_0: 1.0
+  gamma: 0.8

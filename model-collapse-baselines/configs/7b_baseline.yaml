@@ -1,0 +1,11 @@
+base_model: "mistralai/Mistral-7B-v0.1"
+
+training:
+  use_lora: true
+  lora_rank: 16
+  lora_alpha: 32
+  lora_target_modules: ["q_proj", "v_proj", "k_proj", "o_proj"]
+  epochs: 1
+  batch_size: 2
+  gradient_accumulation_steps: 16
+  learning_rate: 1.0e-4

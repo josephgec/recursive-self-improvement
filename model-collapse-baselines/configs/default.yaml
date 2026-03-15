@@ -1,0 +1,37 @@
+experiment:
+  name: "model_collapse_baseline"
+  seed: 42
+  num_generations: 15
+  output_dir: "data"
+
+base_model: "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+
+real_data:
+  dataset: "openwebtext"
+  split: "train"
+  max_documents: 100000
+  max_length: 512
+
+synthetic_generation:
+  num_samples: 50000
+  max_new_tokens: 512
+  temperature: 1.0
+  top_p: 0.95
+  batch_size: 32
+
+training:
+  epochs: 1
+  batch_size: 8
+  gradient_accumulation_steps: 4
+  learning_rate: 2.0e-5
+  warmup_ratio: 0.05
+  weight_decay: 0.01
+  max_steps: -1
+  use_lora: false
+  from_pretrained_each_generation: true
+
+measurement:
+  eval_samples: 10000
+  embedding_model: "all-MiniLM-L6-v2"
+  reference_ngram_order: 4
+  kl_num_bins: 1000

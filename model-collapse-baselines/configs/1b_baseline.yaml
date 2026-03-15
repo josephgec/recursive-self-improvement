@@ -1,0 +1,8 @@
+base_model: "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+
+training:
+  use_lora: false
+  epochs: 1
+  batch_size: 8
+  gradient_accumulation_steps: 4
+  learning_rate: 2.0e-5

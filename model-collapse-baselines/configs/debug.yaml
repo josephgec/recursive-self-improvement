@@ -1,0 +1,20 @@
+experiment:
+  num_generations: 3
+
+base_model: "sshleifer/tiny-gpt2"
+
+real_data:
+  max_documents: 500
+
+synthetic_generation:
+  num_samples: 200
+  max_new_tokens: 64
+  batch_size: 8
+
+training:
+  epochs: 1
+  batch_size: 4
+  max_steps: 50
+
+measurement:
+  eval_samples: 100
