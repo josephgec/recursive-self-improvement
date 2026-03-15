@@ -1,0 +1,45 @@
+project:
+  name: "rsi-infra"
+  environment: "local"
+
+repl:
+  backend: "local"
+  timeout_seconds: 300
+  max_memory_mb: 4096
+  max_recursion_depth: 10
+  pool_size: 4
+  python_version: "3.11"
+  allowed_packages:
+    - numpy
+    - pandas
+    - scipy
+    - sympy
+    - z3-solver
+    - scikit-learn
+    - matplotlib
+  network_access: false
+  filesystem_writable_paths:
+    - "/tmp/repl_workspace"
+  gpu_enabled: false
+
+symbolic:
+  backend: "subprocess"
+  sympy_timeout: 60
+  z3_timeout: 120
+  max_memory_mb: 2048
+
+tracking:
+  backend: "local"
+  project: "rsi-experiments"
+  entity: null
+  safety:
+    goal_drift_check_interval: 1
+    alert_threshold_kl: 0.1
+    alert_threshold_entropy_drop: 0.3
+    alert_threshold_drift_cosine: 0.15
+    constraint_preservation_mode: "hard"
+    weights:
+      semantic: 0.3
+      lexical: 0.2
+      structural: 0.2
+      distributional: 0.3

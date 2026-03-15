@@ -1,0 +1,11 @@
+project:
+  environment: "cloud"
+
+repl:
+  backend: "modal"
+
+symbolic:
+  backend: "docker"
+
+tracking:
+  backend: "wandb"

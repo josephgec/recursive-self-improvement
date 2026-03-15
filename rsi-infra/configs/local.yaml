@@ -1,0 +1,11 @@
+project:
+  environment: "local"
+
+repl:
+  backend: "local"
+
+symbolic:
+  backend: "subprocess"
+
+tracking:
+  backend: "local"

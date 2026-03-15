@@ -1,0 +1,16 @@
+project:
+  environment: "local"
+
+repl:
+  backend: "local"
+  timeout_seconds: 30
+  max_memory_mb: 512
+  pool_size: 1
+
+symbolic:
+  backend: "subprocess"
+  sympy_timeout: 10
+  z3_timeout: 10
+
+tracking:
+  backend: "local"
