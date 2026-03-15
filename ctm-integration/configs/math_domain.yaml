@@ -1,0 +1,27 @@
+ctm:
+  max_states: 3
+  max_symbols: 2
+  max_steps: 100
+  block_size: 12
+
+bdm:
+  default_block_size: 12
+  overlap: false
+
+synthesis:
+  max_iterations: 10
+  candidates_per_iteration: 8
+  pareto_threshold: 0.8
+  domain: "math"
+
+library:
+  store_path: "data/libraries/math_rules.json"
+  max_rules: 500
+  dedup_threshold: 0.95
+
+analysis:
+  report_path: "data/reports/math_report.md"
+  plot_format: "png"
+
+logging:
+  level: "INFO"

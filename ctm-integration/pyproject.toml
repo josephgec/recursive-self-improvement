@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "ctm-integration"
+version = "0.1.0"
+description = "Block Decomposition Method for algorithmic complexity, symbolic rule synthesis, and verified rule library."
+requires-python = ">=3.9"
+dependencies = [
+    "sympy",
+    "numpy",
+    "pandas",
+    "scipy",
+    "scikit-learn",
+    "matplotlib",
+    "seaborn",
+    "rich",
+    "typer",
+    "pyyaml",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "ruff",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--tb=short -q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*", "configs*", "scripts*"]

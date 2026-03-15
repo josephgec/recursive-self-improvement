@@ -1,0 +1,27 @@
+ctm:
+  max_states: 2
+  max_symbols: 2
+  max_steps: 20
+  block_size: 4
+
+bdm:
+  default_block_size: 4
+  overlap: false
+
+synthesis:
+  max_iterations: 2
+  candidates_per_iteration: 3
+  pareto_threshold: 0.5
+  domain: "general"
+
+library:
+  store_path: "data/libraries/debug_rules.json"
+  max_rules: 50
+  dedup_threshold: 0.90
+
+analysis:
+  report_path: "data/reports/debug_report.md"
+  plot_format: "png"
+
+logging:
+  level: "DEBUG"

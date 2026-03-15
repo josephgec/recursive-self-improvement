@@ -1,0 +1,27 @@
+ctm:
+  max_states: 2
+  max_symbols: 2
+  max_steps: 50
+  block_size: 12
+
+bdm:
+  default_block_size: 12
+  overlap: false
+
+synthesis:
+  max_iterations: 5
+  candidates_per_iteration: 5
+  pareto_threshold: 0.7
+  domain: "general"
+
+library:
+  store_path: "data/libraries/rules.json"
+  max_rules: 1000
+  dedup_threshold: 0.95
+
+analysis:
+  report_path: "data/reports/report.md"
+  plot_format: "png"
+
+logging:
+  level: "INFO"
