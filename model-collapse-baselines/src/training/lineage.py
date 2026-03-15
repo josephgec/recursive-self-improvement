@@ -118,10 +118,23 @@ class LineageOrchestrator:
                 config=train_cfg,
             )
             gen_output_dir = self._output_dir / "training" / f"generation_{gen:02d}"
-            trainer.train(mixed_dataset, gen_output_dir)
+            train_loss = trainer.train(mixed_dataset, gen_output_dir)
             model = trainer.get_model()
 
-            # 5. Checkpoint.
+            # 5. Measure quality metrics.
+            eval_samples = self._config.get("measurement", {}).get(
+                "eval_samples", 100
+            )
+            measurement_results = self._compute_measurements(
+                model=model,
+                tokenizer=tokenizer,
+                real_corpus=real_corpus,
+                gen_config=gen_cfg,
+                eval_samples=eval_samples,
+                seed=self._seed + gen + 1000,
+            )
+
+            # 6. Checkpoint.
             checkpoint_mgr.save(
                 generation=gen,
                 model=model,
@@ -129,10 +142,12 @@ class LineageOrchestrator:
                 metadata={"alpha": alpha_t, "seed": self._seed + gen},
             )
 
-            # 6. Record metrics.
+            # 7. Record metrics.
             metrics = GenerationMetrics(
                 generation=gen,
                 alpha=alpha_t,
+                train_loss=train_loss,
+                **measurement_results,
             )
             metrics_recorder.record(metrics)
 
@@ -221,8 +236,21 @@ class LineageOrchestrator:
         gen_output_dir = (
             self._output_dir / "training" / f"generation_{generation:02d}"
         )
-        trainer.train(mixed_dataset, gen_output_dir)
+        train_loss = trainer.train(mixed_dataset, gen_output_dir)
         model = trainer.get_model()
+
+        # Measure quality metrics.
+        eval_samples = self._config.get("measurement", {}).get(
+            "eval_samples", 100
+        )
+        measurement_results = self._compute_measurements(
+            model=model,
+            tokenizer=tokenizer,
+            real_corpus=real_corpus,
+            gen_config=gen_cfg,
+            eval_samples=eval_samples,
+            seed=self._seed + generation + 1000,
+        )
 
         # Checkpoint & metrics.
         checkpoint_mgr.save(
@@ -232,7 +260,12 @@ class LineageOrchestrator:
             metadata={"alpha": alpha_t},
         )
         metrics_recorder.record(
-            GenerationMetrics(generation=generation, alpha=alpha_t)
+            GenerationMetrics(
+                generation=generation,
+                alpha=alpha_t,
+                train_loss=train_loss,
+                **measurement_results,
+            )
         )
         self._cleanup_gpu(model)
 
@@ -276,6 +309,115 @@ class LineageOrchestrator:
     # ------------------------------------------------------------------
     # Internals
     # ------------------------------------------------------------------
+
+    @staticmethod
+    def _compute_measurements(
+        model,
+        tokenizer,
+        real_corpus,
+        gen_config,
+        eval_samples: int,
+        seed: int,
+    ) -> dict[str, Any]:
+        """Generate an eval sample and compute diversity, entropy, and KL metrics.
+
+        Returns a dict with keys matching GenerationMetrics fields:
+        perplexity, kl_divergence, vocab_coverage, and extra.
+        """
+        import math
+
+        import torch
+
+        from src.data.synthetic import GenerationConfig, SyntheticGenerator
+
+        logger.info("Computing measurements on %d eval samples", eval_samples)
+
+        # Generate eval texts from the current model.
+        eval_gen_cfg = GenerationConfig(
+            num_samples=eval_samples,
+            max_new_tokens=gen_config.max_new_tokens,
+            temperature=gen_config.temperature,
+            top_p=gen_config.top_p,
+            batch_size=gen_config.batch_size,
+        )
+        generator = SyntheticGenerator(model, tokenizer, eval_gen_cfg)
+        eval_ds = generator.generate_corpus(n=eval_samples, seed=seed)
+        eval_texts = eval_ds["text"]
+
+        # Filter out empty texts.
+        eval_texts = [t for t in eval_texts if t.strip()]
+        if not eval_texts:
+            logger.warning("All eval texts were empty; skipping measurements")
+            return {"perplexity": None, "kl_divergence": None,
+                    "vocab_coverage": None, "extra": {}}
+
+        # --- Diversity ---
+        from src.measurement.diversity import DiversityMeasurer
+
+        diversity_measurer = DiversityMeasurer()
+        diversity = diversity_measurer.measure(eval_texts)
+        logger.info(
+            "Diversity: distinct_1=%.4f distinct_2=%.4f vocab_usage=%d",
+            diversity.distinct_1, diversity.distinct_2, diversity.vocabulary_usage,
+        )
+
+        # --- Sequence entropy ---
+        from src.measurement.entropy import EntropyMeasurer
+
+        entropy_measurer = EntropyMeasurer()
+        seq_entropy = entropy_measurer.sequence_entropy(eval_texts)
+        logger.info(
+            "Sequence entropy: unigram=%.4f bigram=%.4f trigram=%.4f",
+            seq_entropy.unigram, seq_entropy.bigram, seq_entropy.trigram,
+        )
+
+        # Perplexity from unigram entropy: exp(H) where H is in bits -> convert to nats.
+        perplexity = math.exp(seq_entropy.unigram * math.log(2)) if seq_entropy.unigram > 0 else None
+
+        # --- KL divergence ---
+        from src.measurement.kl_divergence import KLDivergenceEstimator
+
+        kl_divergence = None
+        try:
+            # Build reference token distribution from real corpus.
+            from src.data.real_data import RealDataLoader
+
+            vocab_size = len(tokenizer)
+            import numpy as np
+
+            ref_counts = np.zeros(vocab_size, dtype=np.float64)
+            for row in real_corpus:
+                for tid in row["input_ids"]:
+                    if 0 <= tid < vocab_size:
+                        ref_counts[tid] += 1
+            ref_counts += 1.0  # Laplace smoothing
+            ref_dist = ref_counts / ref_counts.sum()
+
+            kl_estimator = KLDivergenceEstimator(ref_dist, tokenizer)
+            kl_result = kl_estimator.estimate_from_generated_text(eval_texts)
+            kl_divergence = kl_result.kl_p_q
+            logger.info(
+                "KL divergence: KL(P||Q)=%.4f JS=%.4f",
+                kl_result.kl_p_q, kl_result.js_divergence,
+            )
+        except Exception:
+            logger.warning("KL divergence computation failed", exc_info=True)
+
+        return {
+            "perplexity": perplexity,
+            "kl_divergence": kl_divergence,
+            "vocab_coverage": diversity.vocabulary_usage,
+            "extra": {
+                "distinct_1": diversity.distinct_1,
+                "distinct_2": diversity.distinct_2,
+                "distinct_3": diversity.distinct_3,
+                "distinct_4": diversity.distinct_4,
+                "self_bleu": diversity.self_bleu,
+                "type_token_ratio": diversity.type_token_ratio,
+                "sequence_entropy_unigram": seq_entropy.unigram,
+                "sequence_entropy_bigram": seq_entropy.bigram,
+            },
+        }
 
     @staticmethod
     def _generate_synthetic(

@@ -54,7 +54,7 @@ class GenerationTrainer:
     # Public API
     # ------------------------------------------------------------------
 
-    def train(self, dataset: "Dataset", output_dir: str | Path) -> None:
+    def train(self, dataset: "Dataset", output_dir: str | Path) -> float | None:
         """Fine-tune the model on *dataset* and save to *output_dir*.
 
         Args:
@@ -62,6 +62,9 @@ class GenerationTrainer:
                 ``attention_mask``) columns.  A ``labels`` column is created
                 automatically for causal LM training.
             output_dir: Directory to save the trained model and tokenizer.
+
+        Returns:
+            The average training loss, or ``None`` if unavailable.
         """
         from transformers import (
             DataCollatorForLanguageModeling,
@@ -108,12 +111,27 @@ class GenerationTrainer:
         )
 
         logger.info("Starting training: %s", output_dir)
-        trainer.train()
+        train_result = trainer.train()
+
+        # Extract training loss from the result.
+        train_loss: float | None = None
+        try:
+            train_loss = train_result.training_loss
+        except AttributeError:
+            try:
+                metrics = train_result.metrics
+                train_loss = metrics.get("train_loss")
+            except AttributeError:
+                pass
+        self._train_loss = train_loss
 
         # Save model + tokenizer.
         self._save_model(model, output_dir)
         self._tokenizer.save_pretrained(str(output_dir))
-        logger.info("Model saved to %s", output_dir)
+        logger.info("Model saved to %s (train_loss=%.4f)", output_dir,
+                     train_loss if train_loss is not None else float("nan"))
+
+        return train_loss
 
     def get_model(self):
         """Return the loaded (possibly LoRA-wrapped) model."""

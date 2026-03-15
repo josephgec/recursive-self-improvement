@@ -4,6 +4,8 @@ experiment:
 base_model: "sshleifer/tiny-gpt2"
 
 real_data:
+  dataset: "wikitext"
+  dataset_config: "wikitext-2-raw-v1"
   max_documents: 500
 
 synthetic_generation:

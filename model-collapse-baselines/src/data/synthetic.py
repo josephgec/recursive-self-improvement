@@ -123,6 +123,7 @@ class SyntheticGenerator:
             outputs = self._model.generate(
                 **inputs,
                 max_new_tokens=cfg.max_new_tokens,
+                max_length=None,  # suppress warning when model config has max_length
                 temperature=cfg.temperature,
                 top_p=cfg.top_p,
                 do_sample=True,

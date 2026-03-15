@@ -21,6 +21,7 @@ class CorpusConfig:
     """Configuration for the real-data corpus."""
 
     dataset: str = "openwebtext"
+    dataset_config: str | None = None
     split: str = "train"
     max_documents: int = 100_000
     max_length: int = 512
@@ -124,8 +125,8 @@ class RealDataLoader:
         # Load only the slice we need.
         ds = load_dataset(
             cfg.dataset,
+            cfg.dataset_config,
             split=f"{cfg.split}[:{cfg.max_documents}]",
-            trust_remote_code=True,
         )
 
         # Determine the text column name (handle common variations).

@@ -168,6 +168,17 @@ def main(
         # Apply schedule.
         _apply_schedule(cfg, entry["schedule"])
 
+        # Re-apply the user config last so it has highest priority.
+        # This ensures e.g. debug.yaml's base_model beats 1b_baseline.yaml.
+        import yaml as _yaml
+
+        project_root = Path(__file__).resolve().parent.parent
+        default_path = project_root / "configs" / "default.yaml"
+        if config.resolve() != default_path.resolve():
+            with open(config) as _f:
+                _user_overlay = _yaml.safe_load(_f) or {}
+            _deep_merge(cfg, _user_overlay)
+
         # Set output dir.
         cfg.setdefault("experiment", {})["output_dir"] = entry["output_dir"]
 
