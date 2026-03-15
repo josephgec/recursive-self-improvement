@@ -1,0 +1,17 @@
+category: comprehension
+description: "Scenarios testing code comprehension under stress"
+
+scenarios:
+  - name: comprehension_under_complexity
+    severity: 3
+    max_iterations: 30
+    recovery_expected: true
+    expected_failure_mode: STAGNATION
+    notes: "Probe comprehension as complexity increases"
+
+  - name: comprehension_after_modification
+    severity: 3
+    max_iterations: 20
+    recovery_expected: true
+    expected_failure_mode: SILENT_DEGRADATION
+    notes: "Probe comprehension after self-modification"

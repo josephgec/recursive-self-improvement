@@ -1,0 +1,28 @@
+project:
+  name: "godel-fragility"
+  seed: 42
+  output_dir: "data"
+
+stress_test:
+  scenarios: "all"
+  repetitions: 5
+  timeout_per_scenario: 600
+  isolate_environments: true
+
+measurement:
+  track_recovery: true
+  track_complexity: true
+  track_comprehension: true
+  comprehension_probe_interval: 5
+
+complexity_sweep:
+  initial_nodes: 30
+  max_nodes: 500
+  step_size: 20
+  tasks_per_step: 20
+  modification_attempts: 10
+
+analysis:
+  cluster_failure_modes: true
+  compute_fragility_score: true
+  generate_plots: true

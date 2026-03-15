@@ -1,0 +1,27 @@
+category: complexity_escalation
+description: "Scenarios that ramp up code complexity to find the breaking point"
+
+scenarios:
+  - name: forced_complexity_ramp
+    severity: 3
+    max_iterations: 50
+    recovery_expected: true
+    expected_failure_mode: COMPLEXITY_EXPLOSION
+
+  - name: deep_nesting
+    severity: 3
+    max_iterations: 30
+    recovery_expected: true
+    expected_failure_mode: COMPLEXITY_EXPLOSION
+
+  - name: long_function_body
+    severity: 2
+    max_iterations: 30
+    recovery_expected: true
+    expected_failure_mode: STAGNATION
+
+  - name: state_explosion
+    severity: 4
+    max_iterations: 20
+    recovery_expected: false
+    expected_failure_mode: COMPLEXITY_EXPLOSION

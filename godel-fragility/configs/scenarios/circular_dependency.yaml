@@ -1,0 +1,15 @@
+category: circular_dependency
+description: "Scenarios with circular dependencies between functions"
+
+scenarios:
+  - name: mutual_recursion
+    severity: 3
+    max_iterations: 30
+    recovery_expected: true
+    expected_failure_mode: OSCILLATION
+
+  - name: indirect_cycle
+    severity: 4
+    max_iterations: 25
+    recovery_expected: true
+    expected_failure_mode: INFINITE_LOOP

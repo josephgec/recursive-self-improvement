@@ -1,0 +1,21 @@
+category: rollback_corruption
+description: "Scenarios that attack the agent's rollback mechanism"
+
+scenarios:
+  - name: corrupt_checkpoint_format
+    severity: 4
+    max_iterations: 20
+    recovery_expected: true
+    expected_failure_mode: ROLLBACK_FAILURE
+
+  - name: corrupt_baseline_score
+    severity: 5
+    max_iterations: 25
+    recovery_expected: false
+    expected_failure_mode: SILENT_DEGRADATION
+
+  - name: slow_rollback
+    severity: 2
+    max_iterations: 15
+    recovery_expected: true
+    expected_failure_mode: STAGNATION

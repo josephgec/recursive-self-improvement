@@ -1,0 +1,10 @@
+stress_test:
+  scenarios: "all"
+  repetitions: 5
+  timeout_per_scenario: 600
+
+complexity_sweep:
+  initial_nodes: 30
+  max_nodes: 500
+  step_size: 20
+  modification_attempts: 10

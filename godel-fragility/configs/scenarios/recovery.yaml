@@ -1,0 +1,21 @@
+category: recovery
+description: "Scenarios specifically testing recovery capabilities"
+
+scenarios:
+  - name: recovery_from_syntax_error
+    severity: 2
+    max_iterations: 15
+    recovery_expected: true
+    expected_failure_mode: VALIDATION_CAUGHT
+
+  - name: recovery_from_state_corruption
+    severity: 4
+    max_iterations: 20
+    recovery_expected: true
+    expected_failure_mode: STATE_CORRUPTION
+
+  - name: recovery_under_time_pressure
+    severity: 3
+    max_iterations: 10
+    recovery_expected: true
+    expected_failure_mode: STAGNATION

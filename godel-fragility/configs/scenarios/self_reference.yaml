@@ -1,0 +1,33 @@
+category: self_reference
+description: "Scenarios where the agent modifies its own internals"
+
+scenarios:
+  - name: modify_modifier
+    severity: 4
+    max_iterations: 30
+    recovery_expected: true
+    expected_failure_mode: SELF_LOBOTOMY
+
+  - name: modify_validation
+    severity: 5
+    max_iterations: 20
+    recovery_expected: false
+    expected_failure_mode: SILENT_DEGRADATION
+
+  - name: nested_self_modification
+    severity: 5
+    max_iterations: 15
+    recovery_expected: false
+    expected_failure_mode: RUNAWAY_MODIFICATION
+
+  - name: infinite_modification_loop
+    severity: 4
+    max_iterations: 30
+    recovery_expected: true
+    expected_failure_mode: INFINITE_LOOP
+
+  - name: rollback_of_rollback
+    severity: 3
+    max_iterations: 25
+    recovery_expected: true
+    expected_failure_mode: OSCILLATION

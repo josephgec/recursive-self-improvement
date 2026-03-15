@@ -1,0 +1,33 @@
+category: fault_injection
+description: "Direct fault injection into agent code"
+
+scenarios:
+  - name: syntax_error_injection
+    severity: 2
+    max_iterations: 20
+    recovery_expected: true
+    expected_failure_mode: VALIDATION_CAUGHT
+
+  - name: runtime_error_injection
+    severity: 3
+    max_iterations: 20
+    recovery_expected: true
+    expected_failure_mode: ROLLBACK_PARTIAL
+
+  - name: logic_error_injection
+    severity: 4
+    max_iterations: 30
+    recovery_expected: true
+    expected_failure_mode: SILENT_DEGRADATION
+
+  - name: performance_regression_injection
+    severity: 2
+    max_iterations: 20
+    recovery_expected: true
+    expected_failure_mode: STAGNATION
+
+  - name: silent_corruption_injection
+    severity: 5
+    max_iterations: 30
+    recovery_expected: false
+    expected_failure_mode: SILENT_DEGRADATION

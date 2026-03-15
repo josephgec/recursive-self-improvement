@@ -1,0 +1,27 @@
+category: adversarial_task
+description: "Scenarios where the task itself is adversarial"
+
+scenarios:
+  - name: misleading_performance_signal
+    severity: 4
+    max_iterations: 30
+    recovery_expected: false
+    expected_failure_mode: SILENT_DEGRADATION
+
+  - name: distribution_shift
+    severity: 3
+    max_iterations: 30
+    recovery_expected: true
+    expected_failure_mode: STAGNATION
+
+  - name: impossible_tasks
+    severity: 3
+    max_iterations: 25
+    recovery_expected: true
+    expected_failure_mode: STAGNATION
+
+  - name: gradual_poisoning
+    severity: 5
+    max_iterations: 30
+    recovery_expected: false
+    expected_failure_mode: SILENT_DEGRADATION

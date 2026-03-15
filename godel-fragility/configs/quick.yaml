@@ -1,0 +1,10 @@
+stress_test:
+  scenarios: ["syntax_error_injection", "logic_error_injection", "forced_complexity_ramp"]
+  repetitions: 1
+  timeout_per_scenario: 60
+
+complexity_sweep:
+  initial_nodes: 30
+  max_nodes: 100
+  step_size: 30
+  modification_attempts: 3
