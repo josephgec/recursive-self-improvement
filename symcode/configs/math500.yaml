@@ -1,0 +1,4 @@
+benchmarks:
+  math500:
+    num_problems: 500
+    categories: "all"

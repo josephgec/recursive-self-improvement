@@ -1,0 +1,20 @@
+model:
+  provider: "mock"
+  name: "mock-model"
+
+pipeline:
+  router_enabled: false
+
+verification:
+  max_retries: 2
+  execution_timeout: 10
+
+benchmarks:
+  math500:
+    num_problems: 10
+  olympiad:
+    num_problems: 10
+
+evaluation:
+  prose_baseline: true
+  compute_pass_at_k: [1]

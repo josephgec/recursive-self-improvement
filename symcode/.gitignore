@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.DS_Store
+.venv/
+data/benchmarks/
+data/results/
+data/prompts_cache/
+data/reports/
+wandb/

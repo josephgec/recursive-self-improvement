@@ -1,0 +1,4 @@
+benchmarks:
+  olympiad:
+    num_problems: null
+    difficulty: "all"

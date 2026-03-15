@@ -1,0 +1,42 @@
+project:
+  name: "symcode"
+  seed: 42
+  output_dir: "data/results"
+
+model:
+  provider: "openai"
+  name: "gpt-4o"
+  temperature: 0.0
+  max_tokens: 4096
+  api_key_env: "OPENAI_API_KEY"
+
+pipeline:
+  mode: "symcode"
+  router_enabled: true
+  max_code_length: 2000
+  code_language: "python"
+
+verification:
+  max_retries: 3
+  execution_timeout: 30
+  execution_memory_mb: 1024
+  sandbox_backend: "subprocess"
+  numerical_tolerance: 1.0e-6
+
+benchmarks:
+  math500:
+    dataset: "hendrycks/competition_math"
+    split: "test"
+    num_problems: 500
+    categories: "all"
+  olympiad:
+    dataset: "olympiad_bench"
+    split: "test"
+    num_problems: null
+    difficulty: "all"
+
+evaluation:
+  prose_baseline: true
+  compute_pass_at_k: [1, 3, 5]
+  log_all_attempts: true
+  wandb_project: "rsi-experiments"
