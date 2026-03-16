@@ -1,0 +1,21 @@
+experiment:
+  name: modification_frequency
+  description: "Test how often the pipeline should modify its own weights/code"
+  repetitions: 5
+  iterations_per_condition: 20
+
+conditions:
+  - name: every_task
+    description: "Modify after every single task"
+  - name: every_5
+    description: "Modify every 5 iterations"
+  - name: every_10
+    description: "Modify every 10 iterations"
+  - name: every_20
+    description: "Modify every 20 iterations"
+  - name: threshold_90
+    description: "Modify only when accuracy exceeds 90%"
+  - name: plateau_5
+    description: "Modify after 5 iterations without improvement"
+  - name: never
+    description: "Never modify (baseline)"

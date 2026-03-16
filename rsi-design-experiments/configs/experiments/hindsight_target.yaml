@@ -1,0 +1,19 @@
+experiment:
+  name: hindsight_target
+  description: "Test what the hindsight rationalization should target"
+  repetitions: 5
+  iterations_per_condition: 20
+
+conditions:
+  - name: weights_only
+    description: "Hindsight targets model weights only"
+  - name: library_only
+    description: "Hindsight targets code library only"
+  - name: both
+    description: "Hindsight targets both weights and library"
+  - name: none
+    description: "No hindsight rationalization (baseline)"
+  - name: weights_then_library
+    description: "First half targets weights, second half targets library"
+  - name: library_then_weights
+    description: "First half targets library, second half targets weights"

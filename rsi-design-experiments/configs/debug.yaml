@@ -1,0 +1,23 @@
+experiment:
+  repetitions: 2
+  iterations_per_condition: 5
+  seed: 42
+
+pipeline:
+  initial_accuracy: 0.55
+  eval_task_count: 10
+
+measurement:
+  composite_weights:
+    accuracy: 0.4
+    stability: 0.3
+    efficiency: 0.15
+    generalization: 0.15
+
+analysis:
+  significance_level: 0.05
+  min_effect_size: 0.01
+
+reporting:
+  output_dir: data/reports
+  format: markdown

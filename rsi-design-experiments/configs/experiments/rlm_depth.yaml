@@ -1,0 +1,25 @@
+experiment:
+  name: rlm_depth
+  description: "Test optimal recursion depth for the RLM (Recursive Language Model)"
+  repetitions: 5
+  iterations_per_condition: 20
+
+conditions:
+  - name: depth_0
+    description: "No recursion (baseline)"
+  - name: depth_1
+    description: "Single level of recursion"
+  - name: depth_2
+    description: "Two levels of recursion"
+  - name: depth_3
+    description: "Three levels of recursion"
+  - name: depth_4
+    description: "Four levels of recursion"
+  - name: depth_5
+    description: "Five levels of recursion"
+  - name: depth_6
+    description: "Six levels of recursion"
+
+depth_model:
+  accuracy_formula: "0.55 + 0.17 * (1 - exp(-depth / 1.5))"
+  cost_formula: "0.005 * 2^depth"
