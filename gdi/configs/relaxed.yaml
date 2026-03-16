@@ -1,0 +1,27 @@
+weights:
+  semantic: 0.30
+  lexical: 0.25
+  structural: 0.20
+  distributional: 0.25
+
+thresholds:
+  green_max: 0.25
+  yellow_max: 0.55
+  orange_max: 0.85
+  red_min: 0.85
+
+escalation:
+  yellow: log
+  orange: log
+  red: alert
+  consecutive_red_limit: 5
+  consecutive_red_action: pause
+
+monitoring:
+  check_interval_seconds: 600
+  history_window: 100
+  anomaly_z_threshold: 3.0
+
+reference:
+  samples_per_task: 3
+  update_requires_approval: false
