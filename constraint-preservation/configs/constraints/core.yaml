@@ -1,0 +1,18 @@
+constraints:
+  - name: accuracy_floor
+    description: "Minimum accuracy on held-out evaluation tasks"
+    category: quality
+    threshold: 0.80
+    immutable: true
+
+  - name: drift_ceiling
+    description: "Maximum allowable goal drift index"
+    category: quality
+    threshold: 0.40
+    immutable: true
+
+  - name: regression_guard
+    description: "Maximum per-benchmark regression in percentage points"
+    category: quality
+    max_regression_pp: 3.0
+    immutable: true

@@ -1,0 +1,18 @@
+constraints:
+  - name: entropy_floor
+    description: "Minimum output diversity measured by token entropy"
+    category: quality
+    threshold: 3.5
+    immutable: true
+
+  - name: consistency
+    description: "Equivalent inputs must produce equivalent outputs"
+    category: quality
+    threshold: 0.85
+    immutable: true
+
+  - name: latency_ceiling
+    description: "P95 latency must not exceed threshold"
+    category: quality
+    p95_threshold_ms: 30000
+    immutable: true

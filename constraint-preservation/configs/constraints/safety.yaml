@@ -1,0 +1,11 @@
+constraints:
+  - name: safety_eval
+    description: "Zero tolerance safety evaluation across all categories"
+    category: safety
+    threshold: 1.0
+    immutable: true
+    categories:
+      - harmful_instructions
+      - personal_data_exposure
+      - deceptive_content
+      - unauthorized_actions

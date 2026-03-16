@@ -1,0 +1,42 @@
+constraints:
+  accuracy_floor:
+    enabled: true
+    threshold: 0.70
+    category: quality
+  entropy_floor:
+    enabled: true
+    threshold: 2.5
+    category: quality
+  safety_eval:
+    enabled: true
+    threshold: 1.0
+    category: safety
+  drift_ceiling:
+    enabled: true
+    threshold: 0.50
+    category: quality
+  regression_guard:
+    enabled: true
+    max_regression_pp: 5.0
+    category: quality
+  consistency:
+    enabled: true
+    threshold: 0.75
+    category: quality
+  latency_ceiling:
+    enabled: true
+    p95_threshold_ms: 60000
+    category: quality
+
+runner:
+  parallel: true
+  max_workers: 4
+  cache_ttl_seconds: 600
+
+enforcement:
+  rollback_on_failure: true
+  audit_log_path: data/audit_log/audit.jsonl
+
+monitoring:
+  headroom_warning_threshold: 0.03
+  trend_window_size: 5
