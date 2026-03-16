@@ -1,0 +1,37 @@
+forbidden_imports:
+  - os
+  - sys
+  - subprocess
+  - shutil
+  - socket
+  - http
+  - urllib
+  - requests
+  - ctypes
+  - signal
+  - multiprocessing
+  - threading
+  - importlib
+  - __import__
+  - pathlib
+
+forbidden_builtins:
+  - exec
+  - eval
+  - compile
+  - __import__
+  - open
+  - input
+  - breakpoint
+  - exit
+  - quit
+
+allow_dunder_access: false
+allow_star_imports: false
+max_nesting_depth: 10
+max_output_chars: 100000
+timeout_seconds: 30
+max_memory_mb: 512
+max_spawn_depth: 5
+detect_obfuscation: true
+detect_infinite_loops: true

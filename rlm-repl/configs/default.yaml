@@ -1,0 +1,18 @@
+backend: local
+
+safety:
+  policy: configs/safety/default_policy.yaml
+
+pool:
+  size: 4
+  max_idle_seconds: 300
+
+execution:
+  timeout_seconds: 30
+  max_memory_mb: 512
+  max_output_chars: 100000
+  max_recursion_depth: 5
+  max_nesting_depth: 10
+
+logging:
+  level: INFO

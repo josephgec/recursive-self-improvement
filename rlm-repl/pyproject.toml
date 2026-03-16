@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rlm-repl"
+version = "0.1.0"
+description = "Production-grade sandboxed code execution environment for the RLM architecture"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+dependencies = [
+    "pyyaml>=6.0",
+    "dill>=0.3.6",
+]
+
+[project.optional-dependencies]
+docker = ["docker>=6.0"]
+modal = ["modal>=0.50"]
+numpy = ["numpy>=1.24"]
+pandas = ["pandas>=2.0"]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "pytest-asyncio>=0.21",
+    "numpy>=1.24",
+    "pandas>=2.0",
+]
+all = ["rlm-repl[docker,modal,numpy,pandas,dev]"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "--tb=short -q"
+
+[tool.coverage.run]
+source = ["src"]
+omit = [
+    "src/utils/docker_utils.py",
+    "src/utils/modal_utils.py",
+]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 90

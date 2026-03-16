@@ -1,0 +1,56 @@
+forbidden_imports:
+  - os
+  - sys
+  - subprocess
+  - shutil
+  - socket
+  - http
+  - urllib
+  - requests
+  - ctypes
+  - signal
+  - multiprocessing
+  - threading
+  - importlib
+  - __import__
+  - pathlib
+  - pickle
+  - shelve
+  - tempfile
+  - glob
+  - fnmatch
+  - io
+  - code
+  - codeop
+  - compileall
+
+forbidden_builtins:
+  - exec
+  - eval
+  - compile
+  - __import__
+  - open
+  - input
+  - breakpoint
+  - exit
+  - quit
+  - globals
+  - locals
+  - vars
+  - dir
+  - getattr
+  - setattr
+  - delattr
+  - hasattr
+  - type
+  - super
+
+allow_dunder_access: false
+allow_star_imports: false
+max_nesting_depth: 6
+max_output_chars: 50000
+timeout_seconds: 15
+max_memory_mb: 256
+max_spawn_depth: 2
+detect_obfuscation: true
+detect_infinite_loops: true
