@@ -1,0 +1,24 @@
+pipeline:
+  max_iterations: 5
+  candidates_per_iteration: 2
+  checkpoint_interval: 1
+
+verification:
+  empirical:
+    test_timeout_seconds: 5
+    min_pass_rate: 0.5
+  compactness:
+    max_bdm_score: 1000
+
+safety:
+  gdi:
+    threshold: 0.5
+  constraints:
+    accuracy_floor: 0.4
+    entropy_floor: 0.05
+    drift_ceiling: 0.8
+  emergency:
+    max_consecutive_rollbacks: 5
+
+tracking:
+  log_level: DEBUG

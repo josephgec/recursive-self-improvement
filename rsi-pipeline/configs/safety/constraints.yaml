@@ -1,0 +1,33 @@
+hard_constraints:
+  accuracy_floor:
+    value: 0.6
+    description: "Minimum accuracy below which modifications are rolled back"
+    enforcement: hard
+  entropy_floor:
+    value: 0.1
+    description: "Minimum code diversity to prevent degenerate solutions"
+    enforcement: hard
+  drift_ceiling:
+    value: 0.5
+    description: "Maximum allowed GDI drift from original agent"
+    enforcement: hard
+
+soft_constraints:
+  complexity_ceiling:
+    value: 1000
+    description: "Maximum BDM complexity score for candidate code"
+    enforcement: soft
+  car_minimum:
+    value: 0.5
+    description: "Minimum capability-to-alignment ratio"
+    enforcement: soft
+
+emergency_triggers:
+  consecutive_rollbacks: 3
+  car_below: 0.5
+  constraint_violation: true
+
+audit:
+  log_all_modifications: true
+  log_all_rollbacks: true
+  export_on_emergency: true

@@ -1,0 +1,22 @@
+paradigm: soar
+description: "State, Operator, And Result — cognitive architecture for self-improvement"
+
+population:
+  size: 10
+  selection: tournament
+  tournament_size: 3
+
+operators:
+  - mutate
+  - crossover
+  - refine
+
+evolution:
+  generations_per_iteration: 5
+  mutation_rate: 0.1
+  crossover_rate: 0.7
+
+hindsight:
+  enabled: true
+  training_pairs_per_iteration: 5
+  feedback_weight: 0.5

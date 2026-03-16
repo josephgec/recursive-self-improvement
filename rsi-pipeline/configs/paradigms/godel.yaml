@@ -1,0 +1,16 @@
+paradigm: godel_agent
+description: "Gödel Agent — self-referential improvement with provable guarantees"
+
+self_reference:
+  quine_enabled: false
+  introspection_depth: 1
+
+modification:
+  verify_before_apply: true
+  require_improvement_proof: false
+  rollback_on_degradation: true
+
+bounds:
+  complexity_ceiling: 1000
+  max_modification_size: 500
+  cooldown_iterations: 2

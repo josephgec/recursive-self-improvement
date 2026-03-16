@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "rsi-pipeline"
+version = "0.1.0"
+description = "Recursive Self-Improvement Pipeline: SOAR + SymCode/CTM + Gödel Agent + RLM"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--tb=short -q"
+
+[tool.coverage.run]
+source = ["src"]
+omit = ["tests/*", "scripts/*"]
+
+[tool.coverage.report]
+fail_under = 90
+show_missing = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]

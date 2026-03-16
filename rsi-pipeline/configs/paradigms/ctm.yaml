@@ -1,0 +1,18 @@
+paradigm: ctm
+description: "Conscious Turing Machine — awareness-guided self-modification"
+
+awareness:
+  self_model_depth: 2
+  introspection_enabled: true
+
+attention:
+  focus_mechanism: priority
+  threshold: 0.7
+
+broadcast:
+  global_workspace: true
+  coalition_size: 3
+
+integration:
+  with_soar: true
+  with_symcode: true

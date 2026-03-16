@@ -1,0 +1,19 @@
+paradigm: symcode_ctm
+description: "SymCode with Conscious Turing Machine — symbolic code manipulation with awareness"
+
+symbolic:
+  representation: ast
+  transformations:
+    - simplify
+    - refactor
+    - optimize
+
+ctm:
+  attention_threshold: 0.7
+  broadcast_enabled: true
+  consciousness_level: functional
+
+verification:
+  use_formal_methods: false
+  use_type_checking: true
+  complexity_metric: bdm

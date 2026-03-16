@@ -1,0 +1,21 @@
+paradigm: rlm
+description: "Reasoning Language Model — long-context reasoning for code improvement"
+
+context:
+  max_tokens: 100000
+  include_codebase: true
+  include_history: true
+  include_dataset: true
+
+session:
+  timeout_seconds: 300
+  checkpointing: true
+
+reasoning:
+  chain_of_thought: true
+  self_reflection: true
+  multi_step: true
+
+integration:
+  wrap_iterations: true
+  provide_full_context: true

@@ -1,0 +1,61 @@
+pipeline:
+  max_iterations: 100
+  candidates_per_iteration: 5
+  checkpoint_interval: 10
+  data_dir: data
+
+verification:
+  empirical:
+    test_timeout_seconds: 30
+    min_pass_rate: 0.8
+  compactness:
+    max_bdm_score: 500
+    complexity_weight: 0.3
+  pareto:
+    objectives:
+      - accuracy
+      - compactness
+
+modification:
+  cooldown_iterations: 2
+  complexity_ceiling: 1000
+  allowed_targets:
+    - strategy_evolver
+    - candidate_pool
+    - empirical_gate
+    - compactness_gate
+    - pareto_filter
+  forbidden_targets:
+    - emergency_stop
+    - constraint_enforcer
+    - gdi_monitor
+
+safety:
+  gdi:
+    threshold: 0.3
+  constraints:
+    accuracy_floor: 0.6
+    entropy_floor: 0.1
+    drift_ceiling: 0.5
+  car:
+    min_ratio: 0.5
+  emergency:
+    max_consecutive_rollbacks: 3
+    check_interval: 1
+
+scaling:
+  rlm:
+    max_context_tokens: 100000
+    session_timeout_seconds: 300
+
+tracking:
+  log_level: INFO
+  export_format: json
+
+analysis:
+  convergence:
+    window_size: 10
+    threshold: 0.01
+  plateau_detection:
+    min_iterations: 5
+    tolerance: 0.005
