@@ -1,0 +1,44 @@
+# RSI Benchmark - Default Configuration
+pipeline:
+  iterations: 15
+  benchmarks:
+    - math500
+    - arc_agi
+    - oolong
+    - humaneval
+    - swebench
+    - financial
+
+evaluation:
+  tasks_per_benchmark: 30
+  held_out_fraction: 0.2
+  snapshot_every: 5
+
+improvement:
+  growth_models:
+    - logarithmic
+    - power
+    - sigmoid
+  sustained_threshold: 3
+  plateau_tolerance: 0.005
+
+collapse:
+  baseline_generations: 20
+  initial_accuracy: 0.78
+  decay_rate: 0.02
+  entropy_decay: 0.05
+
+ablation:
+  conditions:
+    - full_pipeline
+    - no_soar
+    - no_ctm
+    - no_godel
+    - no_rlm
+    - soar_only
+    - naive_self_train
+  iterations_per_condition: 15
+
+report:
+  output_dir: data/reports
+  format: markdown
