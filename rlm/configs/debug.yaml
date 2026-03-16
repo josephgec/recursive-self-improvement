@@ -1,0 +1,21 @@
+model: "mock"
+max_iterations: 5
+max_depth: 2
+token_budget: 50000
+chunk_size: 2000
+forced_final: true
+context_loader:
+  max_chunk_size: 2000
+  overlap: 100
+executor:
+  timeout: 10
+  max_output_lines: 200
+recursion:
+  max_depth: 2
+  max_sub_queries: 3
+  budget_fraction: 0.5
+strategies:
+  auto_detect: true
+logging:
+  level: "DEBUG"
+  trajectory: true

@@ -1,0 +1,109 @@
+{
+  "metadata": {
+    "title": "Research Dataset",
+    "version": "2.0",
+    "created": "2024-01-01",
+    "record_count": 10,
+    "secret_field": "HIDDEN_VALUE_999"
+  },
+  "records": [
+    {
+      "id": 1,
+      "name": "Alpha Project",
+      "category": "infrastructure",
+      "status": "active",
+      "metrics": {"score": 85, "completion": 0.7},
+      "tags": ["cloud", "kubernetes", "microservices"],
+      "description": "A cloud-native infrastructure project focusing on container orchestration and service mesh implementation for enterprise workloads."
+    },
+    {
+      "id": 2,
+      "name": "Beta Analysis",
+      "category": "data_science",
+      "status": "completed",
+      "metrics": {"score": 92, "completion": 1.0},
+      "tags": ["ml", "analytics", "python"],
+      "description": "Comprehensive data analysis pipeline for processing large-scale datasets with machine learning models and statistical analysis tools."
+    },
+    {
+      "id": 3,
+      "name": "Gamma Security",
+      "category": "security",
+      "status": "active",
+      "metrics": {"score": 78, "completion": 0.5},
+      "tags": ["security", "compliance", "audit"],
+      "description": "Security audit and compliance framework for ensuring adherence to industry standards and regulatory requirements."
+    },
+    {
+      "id": 4,
+      "name": "Delta Platform",
+      "category": "platform",
+      "status": "planning",
+      "metrics": {"score": 65, "completion": 0.1},
+      "tags": ["platform", "api", "developer-tools"],
+      "description": "Developer platform providing APIs and tools for building and deploying applications with integrated CI/CD pipelines."
+    },
+    {
+      "id": 5,
+      "name": "Epsilon ML",
+      "category": "data_science",
+      "status": "active",
+      "metrics": {"score": 88, "completion": 0.8},
+      "tags": ["ml", "deep-learning", "gpu"],
+      "description": "Deep learning research project exploring novel architectures for natural language understanding and generation tasks."
+    },
+    {
+      "id": 6,
+      "name": "Zeta Network",
+      "category": "infrastructure",
+      "status": "completed",
+      "metrics": {"score": 95, "completion": 1.0},
+      "tags": ["network", "cdn", "edge"],
+      "description": "Global content delivery network with edge computing capabilities for low-latency content distribution worldwide."
+    },
+    {
+      "id": 7,
+      "name": "Eta Monitoring",
+      "category": "observability",
+      "status": "active",
+      "metrics": {"score": 82, "completion": 0.6},
+      "tags": ["monitoring", "alerting", "dashboards"],
+      "description": "Comprehensive monitoring and observability platform with real-time alerting and customizable dashboards."
+    },
+    {
+      "id": 8,
+      "name": "Theta Database",
+      "category": "infrastructure",
+      "status": "active",
+      "metrics": {"score": 90, "completion": 0.9},
+      "tags": ["database", "distributed", "sql"],
+      "description": "Distributed SQL database system designed for high availability and horizontal scalability across multiple regions."
+    },
+    {
+      "id": 9,
+      "name": "Iota Frontend",
+      "category": "frontend",
+      "status": "active",
+      "metrics": {"score": 75, "completion": 0.4},
+      "tags": ["react", "typescript", "ui"],
+      "description": "Modern frontend framework and component library built with React and TypeScript for enterprise web applications."
+    },
+    {
+      "id": 10,
+      "name": "Kappa Automation",
+      "category": "devops",
+      "status": "planning",
+      "metrics": {"score": 70, "completion": 0.2},
+      "tags": ["automation", "terraform", "ansible"],
+      "description": "Infrastructure automation suite using Terraform and Ansible for consistent and repeatable environment provisioning."
+    }
+  ],
+  "summary": {
+    "total_score": 820,
+    "avg_score": 82.0,
+    "categories": ["infrastructure", "data_science", "security", "platform", "observability", "frontend", "devops"],
+    "active_count": 6,
+    "completed_count": 2,
+    "planning_count": 2
+  }
+}

@@ -1,0 +1,20 @@
+This is a small test context for RLM testing.
+It contains several lines of text that can be searched.
+The secret value is: FOUND_IT_42
+Some additional filler text to make this roughly 1K characters.
+Line 5: The quick brown fox jumps over the lazy dog.
+Line 6: Pack my box with five dozen liquor jugs.
+Line 7: How vexingly quick daft zebras jump.
+Line 8: The five boxing wizards jump quickly.
+Line 9: Sphinx of black quartz, judge my vow.
+Line 10: Two driven jocks help fax my big quiz.
+Line 11: Amazingly few discotheques provide jukeboxes.
+Line 12: Jack quietly moved up front and seized the big ball of wax.
+Line 13: A mad boxer shot a quick, gloved jab to the jaw of his dizzy opponent.
+Line 14: The job requires extra pluck and zeal from every young wage earner.
+Line 15: A quart jar of oil mixed with zinc oxide makes a very bright paint.
+Line 16: Grumpy wizards make toxic brew for the evil queen and jack.
+Line 17: The lazy major was fixing Cupid's broken quiver.
+Line 18: Few black taxis drive up major roads on quiet hazy nights.
+Line 19: We promptly judged antique ivory buckles for the next prize.
+Line 20: Crazy Frederick bought many very exquisite opal jewels.
