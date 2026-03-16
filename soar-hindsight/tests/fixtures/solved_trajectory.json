@@ -1,0 +1,56 @@
+{
+  "trajectory_id": "solved-001",
+  "task": {
+    "task_id": "task-sort",
+    "description": "Implement a function that sorts a list of integers in ascending order",
+    "test_cases": [
+      {"input": [3, 1, 2], "expected": [1, 2, 3]},
+      {"input": [5, 4, 3, 2, 1], "expected": [1, 2, 3, 4, 5]}
+    ],
+    "difficulty": "easy",
+    "tags": ["sorting", "algorithms"]
+  },
+  "individuals": [
+    {
+      "individual_id": "ind-001",
+      "generation": 0,
+      "code": "def sort_list(lst):\n    return lst",
+      "fitness": 0.2,
+      "parent_ids": [],
+      "operator": "init",
+      "error": null
+    },
+    {
+      "individual_id": "ind-002",
+      "generation": 0,
+      "code": "def sort_list(lst):\n    return list(reversed(lst))",
+      "fitness": 0.3,
+      "parent_ids": [],
+      "operator": "init",
+      "error": null
+    },
+    {
+      "individual_id": "ind-003",
+      "generation": 1,
+      "code": "def sort_list(lst):\n    for i in range(len(lst)):\n        for j in range(i+1, len(lst)):\n            if lst[i] > lst[j]:\n                lst[i], lst[j] = lst[j], lst[i]\n    return lst",
+      "fitness": 0.7,
+      "parent_ids": ["ind-001"],
+      "operator": "mutation",
+      "error": null
+    },
+    {
+      "individual_id": "ind-004",
+      "generation": 2,
+      "code": "def sort_list(lst):\n    return sorted(lst)",
+      "fitness": 1.0,
+      "parent_ids": ["ind-002", "ind-003"],
+      "operator": "crossover",
+      "error": null
+    }
+  ],
+  "improvement_steps": [],
+  "best_fitness": 1.0,
+  "total_generations": 3,
+  "solved": true,
+  "metadata": {"search_time": 2.5}
+}

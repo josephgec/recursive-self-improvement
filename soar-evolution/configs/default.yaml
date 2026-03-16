@@ -1,0 +1,37 @@
+search:
+  population_size: 50
+  max_generations: 100
+  elitism_ratio: 0.1
+  tournament_size: 5
+  mutation_rate: 0.7
+  crossover_rate: 0.3
+  stagnation_limit: 15
+  target_fitness: 1.0
+
+fitness:
+  pixel_accuracy_weight: 0.7
+  simplicity_weight: 0.15
+  consistency_weight: 0.15
+  max_code_length: 2000
+
+population:
+  diversity_threshold: 0.3
+  archive_size: 20
+
+operators:
+  initializer_variants: 5
+  mutation_types:
+    - BUG_FIX
+    - REFINEMENT
+    - RESTRUCTURE
+    - SIMPLIFY
+    - GENERALIZE
+  crossover_complementarity_threshold: 0.4
+
+evaluation:
+  timeout_seconds: 5
+  max_retries: 2
+
+logging:
+  level: INFO
+  log_file: data/results/search.log

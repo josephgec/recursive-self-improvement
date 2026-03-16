@@ -1,0 +1,62 @@
+collection:
+  trajectory_dir: data/trajectories
+  min_fitness: 0.0
+  max_trajectories: 100
+
+synthesis:
+  strategies:
+    direct_solution:
+      weight: 1.0
+      min_fitness: 0.3
+    error_correction:
+      weight: 0.5
+      min_attempts: 1
+    improvement_chain:
+      weight: 0.5
+      min_steps: 2
+      max_steps: 5
+    hindsight_relabel:
+      weight: 0.3
+      fitness_threshold: 0.1
+    crossover_pairs:
+      weight: 0.3
+    pattern_description:
+      weight: 0.2
+  quality:
+    min_prompt_tokens: 5
+    max_prompt_tokens: 8192
+    min_completion_tokens: 5
+    max_completion_tokens: 8192
+    min_quality_score: 0.1
+  deduplication:
+    similarity_threshold: 0.95
+
+finetuning:
+  backend: local
+  openai:
+    model: gpt-4o-mini-2024-07-18
+    n_epochs: 1
+    batch_size: 2
+    learning_rate_multiplier: 1.0
+  local:
+    base_model: codellama-7b
+    epochs: 1
+    batch_size: 2
+    learning_rate: 2.0e-5
+
+iteration:
+  max_iterations: 3
+  convergence:
+    patience: 2
+    min_improvement: 0.005
+  evaluation:
+    n_tasks: 10
+    metrics:
+      - zero_shot_solve_rate
+
+output:
+  format: openai_jsonl
+  training_data_dir: data/training_data
+  models_dir: data/models
+  evaluations_dir: data/evaluations
+  reports_dir: data/reports

@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg
+.eggs/
+data/trajectories/*.json
+data/training_data/*.jsonl
+data/models/*
+data/evaluations/*
+data/reports/*
+!data/**/.gitkeep

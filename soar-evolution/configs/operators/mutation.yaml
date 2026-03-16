@@ -1,0 +1,21 @@
+mutation_types:
+  BUG_FIX:
+    description: Fix syntax and runtime errors
+    base_weight: 3.0
+    condition: not_valid
+  REFINEMENT:
+    description: Improve accuracy on specific examples
+    base_weight: 2.0
+    condition: low_accuracy
+  RESTRUCTURE:
+    description: Restructure code for better logic flow
+    base_weight: 1.5
+    condition: always
+  SIMPLIFY:
+    description: Reduce code complexity
+    base_weight: 2.0
+    condition: long_code
+  GENERALIZE:
+    description: Handle edge cases better
+    base_weight: 2.0
+    condition: high_accuracy

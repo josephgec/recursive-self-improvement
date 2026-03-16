@@ -1,0 +1,55 @@
+{
+  "trajectory_id": "failed-001",
+  "task": {
+    "task_id": "task-graph-bfs",
+    "description": "Implement breadth-first search on an adjacency list graph",
+    "test_cases": [
+      {"input": {"graph": {"A": ["B", "C"], "B": ["D"], "C": [], "D": []}, "start": "A"}, "expected": ["A", "B", "C", "D"]}
+    ],
+    "difficulty": "hard",
+    "tags": ["graph", "search"]
+  },
+  "individuals": [
+    {
+      "individual_id": "ind-f01",
+      "generation": 0,
+      "code": "def bfs(graph, start):\n    return []",
+      "fitness": 0.0,
+      "parent_ids": [],
+      "operator": "init",
+      "error": "TypeError: 'NoneType' not iterable"
+    },
+    {
+      "individual_id": "ind-f02",
+      "generation": 1,
+      "code": "def bfs(graph, start):\n    visited = []\n    visited.append(start)\n    return visited",
+      "fitness": 0.2,
+      "parent_ids": ["ind-f01"],
+      "operator": "mutation",
+      "error": null
+    },
+    {
+      "individual_id": "ind-f03",
+      "generation": 1,
+      "code": "def bfs(graph, start):\n    queue = [start]\n    for node in queue:\n        neighbors = graph[node]\n    return queue",
+      "fitness": 0.15,
+      "parent_ids": ["ind-f01"],
+      "operator": "mutation",
+      "error": "KeyError: missing node in graph"
+    },
+    {
+      "individual_id": "ind-f04",
+      "generation": 2,
+      "code": "def bfs(graph, start):\n    visited = set()\n    queue = [start]\n    result = []\n    while queue:\n        node = queue.pop(0)\n        if node not in visited:\n            visited.add(node)\n            result.append(node)\n            for neighbor in graph.get(node, []):\n                queue.append(neighbor)\n    return result",
+      "fitness": 0.4,
+      "parent_ids": ["ind-f02", "ind-f03"],
+      "operator": "crossover",
+      "error": null
+    }
+  ],
+  "improvement_steps": [],
+  "best_fitness": 0.4,
+  "total_generations": 3,
+  "solved": false,
+  "metadata": {"search_time": 8.0}
+}
