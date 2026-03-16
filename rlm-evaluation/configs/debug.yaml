@@ -1,0 +1,33 @@
+benchmarks:
+  - synthetic
+
+execution:
+  max_workers: 1
+  timeout_seconds: 60
+  checkpoint_interval: 5
+
+rlm:
+  max_sub_sessions: 2
+  max_tokens_per_session: 1024
+  model: "mock-rlm"
+
+standard:
+  model: "mock-standard"
+  context_window: 4096
+
+cost:
+  rlm_input_per_1k: 0.01
+  rlm_output_per_1k: 0.03
+  standard_input_per_1k: 0.005
+  standard_output_per_1k: 0.015
+
+scaling:
+  context_sizes:
+    - 1000
+    - 4000
+    - 16000
+
+reporting:
+  output_dir: "data/reports"
+  include_trajectories: true
+  max_example_trajectories: 2

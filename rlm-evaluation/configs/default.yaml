@@ -1,0 +1,40 @@
+benchmarks:
+  - oolong
+  - locodiff
+  - synthetic
+
+execution:
+  max_workers: 4
+  timeout_seconds: 300
+  checkpoint_interval: 10
+
+rlm:
+  max_sub_sessions: 5
+  max_tokens_per_session: 4096
+  model: "mock-rlm"
+
+standard:
+  model: "mock-standard"
+  context_window: 8192
+
+cost:
+  rlm_input_per_1k: 0.01
+  rlm_output_per_1k: 0.03
+  standard_input_per_1k: 0.005
+  standard_output_per_1k: 0.015
+
+scaling:
+  context_sizes:
+    - 1000
+    - 2000
+    - 4000
+    - 8000
+    - 16000
+    - 32000
+    - 64000
+    - 128000
+
+reporting:
+  output_dir: "data/reports"
+  include_trajectories: true
+  max_example_trajectories: 5
