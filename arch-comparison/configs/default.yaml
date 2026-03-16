@@ -1,0 +1,43 @@
+project:
+  name: arch-comparison
+  version: 0.1.0
+
+systems:
+  - hybrid
+  - integrative
+  - prose
+
+evaluation:
+  axes:
+    - generalization
+    - interpretability
+    - robustness
+  num_tasks_per_domain: 20
+  domains:
+    - arithmetic
+    - algebra
+    - logic
+    - probability
+
+hybrid:
+  max_tool_calls: 5
+  tools:
+    - sympy_solve
+    - z3_check
+    - simplify
+  timeout_seconds: 30
+
+integrative:
+  constraint_weight: 0.3
+  logical_bias_strength: 0.5
+  hidden_dim: 64
+  num_heads: 4
+
+analysis:
+  confidence_level: 0.95
+  min_effect_size: 0.2
+  generate_plots: true
+
+output:
+  results_dir: data/output
+  report_dir: reports

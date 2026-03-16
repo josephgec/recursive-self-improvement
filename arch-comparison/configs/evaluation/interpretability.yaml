@@ -1,0 +1,22 @@
+interpretability:
+  metrics:
+    - step_verifiability
+    - faithfulness
+    - readability
+  weights:
+    step_verifiability: 0.4
+    faithfulness: 0.35
+    readability: 0.25
+  readability:
+    max_sentence_length: 30
+    min_connectives: 1
+    connective_words:
+      - therefore
+      - because
+      - since
+      - thus
+      - hence
+      - so
+      - implies
+      - if
+      - then

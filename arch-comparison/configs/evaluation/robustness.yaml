@@ -1,0 +1,13 @@
+robustness:
+  perturbation_types:
+    - rephrase
+    - noise
+    - domain_shift
+    - adversarial
+  metrics:
+    - consistency
+    - degradation
+    - worst_case
+  consistency_threshold: 0.85
+  max_degradation: 0.2
+  num_perturbations_per_task: 3

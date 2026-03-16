@@ -1,0 +1,14 @@
+integrative:
+  constraint_weight: 0.5
+  logical_bias_strength: 0.7
+  hidden_dim: 128
+  num_heads: 8
+  training:
+    epochs: 10
+    learning_rate: 0.001
+    batch_size: 16
+    warmup_steps: 100
+  constraints:
+    arithmetic: true
+    logical_consistency: true
+    type_checking: true

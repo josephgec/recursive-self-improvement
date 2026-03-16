@@ -1,0 +1,17 @@
+generalization:
+  train_ratio: 0.7
+  test_ratio: 0.3
+  in_domain_weight: 0.5
+  out_of_domain_weight: 0.5
+  gap_threshold: 0.15
+  domains:
+    in_domain:
+      - arithmetic
+      - algebra
+    out_of_domain:
+      - logic
+      - probability
+  metrics:
+    - accuracy
+    - generalization_gap
+    - transfer_ratio

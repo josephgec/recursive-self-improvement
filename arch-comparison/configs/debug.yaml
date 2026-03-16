@@ -1,0 +1,35 @@
+project:
+  name: arch-comparison-debug
+
+systems:
+  - hybrid
+  - integrative
+  - prose
+
+evaluation:
+  axes:
+    - generalization
+  num_tasks_per_domain: 3
+  domains:
+    - arithmetic
+
+hybrid:
+  max_tool_calls: 2
+  tools:
+    - sympy_solve
+  timeout_seconds: 10
+
+integrative:
+  constraint_weight: 0.3
+  logical_bias_strength: 0.5
+  hidden_dim: 16
+  num_heads: 2
+
+analysis:
+  confidence_level: 0.95
+  min_effect_size: 0.2
+  generate_plots: false
+
+output:
+  results_dir: data/output/debug
+  report_dir: reports/debug

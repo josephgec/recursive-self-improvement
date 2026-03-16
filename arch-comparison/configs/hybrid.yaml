@@ -1,0 +1,12 @@
+hybrid:
+  max_tool_calls: 10
+  tools:
+    - sympy_solve
+    - z3_check
+    - simplify
+    - factor
+    - expand
+  timeout_seconds: 60
+  retry_on_error: true
+  chain_of_thought: true
+  log_level: debug
