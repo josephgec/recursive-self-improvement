@@ -1,0 +1,34 @@
+evolution:
+  population_size: 20
+  num_generations: 10
+  mutation_rate: 0.3
+  crossover_rate: 0.5
+  elitism_count: 2
+  tournament_size: 3
+  max_tokens: 2000
+  stagnation_limit: 5
+  diversity_threshold: 0.3
+
+fitness:
+  accuracy_weight: 0.7
+  reasoning_weight: 0.15
+  consistency_weight: 0.15
+
+evaluation:
+  tasks_per_generation: 10
+  repetitions: 3
+
+domain:
+  name: financial_math
+  description: "Financial mathematics including compound interest, present value, loan amortization, option pricing, risk-return analysis, bond valuation, and time value of money."
+
+ablation:
+  repetitions: 5
+  conditions:
+    - full_thinking
+    - no_thinking
+    - random_mutation
+    - no_crossover
+    - no_elitism
+    - small_population
+    - large_population

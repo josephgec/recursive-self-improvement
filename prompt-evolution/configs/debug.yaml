@@ -1,0 +1,30 @@
+evolution:
+  population_size: 4
+  num_generations: 3
+  mutation_rate: 0.3
+  crossover_rate: 0.5
+  elitism_count: 1
+  tournament_size: 2
+  max_tokens: 1000
+  stagnation_limit: 3
+  diversity_threshold: 0.3
+
+fitness:
+  accuracy_weight: 0.7
+  reasoning_weight: 0.15
+  consistency_weight: 0.15
+
+evaluation:
+  tasks_per_generation: 5
+  repetitions: 1
+
+domain:
+  name: financial_math
+  description: "Financial mathematics problems for debugging."
+
+ablation:
+  repetitions: 2
+  conditions:
+    - full_thinking
+    - no_thinking
+    - random_mutation
