@@ -1,0 +1,19 @@
+suite: neurosymbolic
+paper_name: "Neurosymbolic Recursive Self-Improvement"
+conditions:
+  - full
+  - symcode_only
+  - bdm_only
+  - prose_only
+  - code_no_verify
+  - hybrid_no_bdm
+  - integrative
+benchmarks:
+  - code_generation
+  - reasoning
+  - verification
+key_comparisons:
+  - [full, prose_only]
+  - [full, symcode_only]
+  - [full, bdm_only]
+  - [symcode_only, prose_only]

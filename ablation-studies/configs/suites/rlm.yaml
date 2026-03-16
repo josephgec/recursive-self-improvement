@@ -1,0 +1,20 @@
+suite: rlm
+paper_name: "Recursive Language Model Scaffolding"
+conditions:
+  - full
+  - no_recursion
+  - no_helpers
+  - depth_1
+  - no_repl
+  - repl_no_code
+  - chunked_prompt
+  - rag_baseline
+benchmarks:
+  - large_context
+  - multi_step
+  - code_execution
+key_comparisons:
+  - [full, no_repl]
+  - [full, no_recursion]
+  - [full, depth_1]
+  - [full, rag_baseline]

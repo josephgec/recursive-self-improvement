@@ -1,0 +1,20 @@
+suite: godel
+paper_name: "Godel Agent Self-Modification"
+conditions:
+  - full
+  - no_rollback
+  - no_validation
+  - no_ceiling
+  - no_cooldown
+  - no_audit
+  - no_self_mod
+  - unrestricted
+benchmarks:
+  - self_modification
+  - safety_bounds
+  - convergence
+key_comparisons:
+  - [full, no_self_mod]
+  - [full, unrestricted]
+  - [full, no_rollback]
+  - [full, no_validation]

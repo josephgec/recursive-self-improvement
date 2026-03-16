@@ -1,0 +1,28 @@
+## Default ablation study configuration
+execution:
+  repetitions: 5
+  seed: 42
+  parallel: true
+  max_workers: 4
+  checkpoint: true
+  checkpoint_dir: data/results
+
+analysis:
+  alpha: 0.05
+  bonferroni: true
+  bootstrap_samples: 1000
+  confidence_level: 0.95
+
+publication:
+  output_dir: data
+  figure_format: pdf
+  font_family: serif
+  font_size: 10
+  colorblind_safe: true
+  dpi: 300
+
+suites:
+  - neurosymbolic
+  - godel
+  - soar
+  - rlm

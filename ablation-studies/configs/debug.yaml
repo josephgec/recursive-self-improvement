@@ -1,0 +1,25 @@
+## Debug configuration - fast runs for testing
+execution:
+  repetitions: 2
+  seed: 42
+  parallel: false
+  max_workers: 1
+  checkpoint: false
+  checkpoint_dir: data/results
+
+analysis:
+  alpha: 0.05
+  bonferroni: false
+  bootstrap_samples: 100
+  confidence_level: 0.95
+
+publication:
+  output_dir: data
+  figure_format: png
+  font_family: serif
+  font_size: 10
+  colorblind_safe: true
+  dpi: 150
+
+suites:
+  - neurosymbolic

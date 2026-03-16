@@ -1,0 +1,20 @@
+suite: soar
+paper_name: "SOAR Evolutionary Search"
+conditions:
+  - full
+  - no_hindsight
+  - no_crossover
+  - no_error_guidance
+  - no_mutation
+  - random_search
+  - single_candidate
+  - hindsight_library
+benchmarks:
+  - search_efficiency
+  - solution_quality
+  - diversity
+key_comparisons:
+  - [full, random_search]
+  - [full, no_hindsight]
+  - [full, no_crossover]
+  - [hindsight_library, no_hindsight]
