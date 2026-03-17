@@ -1,0 +1,81 @@
+collapse:
+  alpha_scheduler:
+    default_schedule: exponential
+    gamma: 0.95
+    initial_alpha: 0.5
+    min_alpha: 0.01
+    adaptive_entropy_threshold: 2.0
+  data_reserve:
+    min_reserve_fraction: 0.1
+    initial_size: 10000
+  halt:
+    entropy_drop_threshold: 0.3
+    kl_increase_threshold: 2.0
+    max_consecutive_degradations: 3
+
+self_mod:
+  complexity_budget:
+    max_ratio: 5.0
+    max_cyclomatic: 50
+  staging:
+    min_benchmark_pass_rate: 0.95
+  quarantine:
+    auto_quarantine_blast_radius: 0.7
+
+reward:
+  adversarial:
+    min_tasks: 20
+    max_eval_gap: 0.15
+  rotation:
+    rotate_every_n: 10
+    reserve_fraction: 0.3
+  sanity:
+    min_reward: -10.0
+    max_reward: 100.0
+    max_std_dev: 5.0
+
+cost:
+  budget:
+    query_limit: 1.00
+    session_limit: 50.00
+    iteration_limit: 500.00
+    phase_limit: 5000.00
+  circuit_breaker:
+    max_sub_queries: 50
+    max_tokens: 1000000
+    max_cost_per_query: 10.00
+  forecast:
+    alert_threshold: 0.20
+
+constraints:
+  relaxation:
+    max_steps: 3
+    step_size_pp: 2
+    safety_constraints:
+      - no_harmful_output
+      - maintain_alignment
+      - preserve_safety_checks
+  tightness:
+    too_tight_threshold: 0.50
+    too_loose_threshold: 0.10
+
+publication:
+  deadlines:
+    - name: "NeurIPS 2026"
+      abstract_date: "2026-05-15"
+      submission_date: "2026-05-22"
+    - name: "ICML 2026"
+      abstract_date: "2026-01-30"
+      submission_date: "2026-02-06"
+    - name: "ICLR 2027"
+      abstract_date: "2026-09-28"
+      submission_date: "2026-10-03"
+  readiness:
+    min_experiments_complete: 0.8
+    min_writing_complete: 0.6
+
+orchestration:
+  dashboard:
+    refresh_interval_seconds: 60
+  incidents:
+    auto_escalate_severity: critical
