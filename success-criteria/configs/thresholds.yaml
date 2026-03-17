@@ -1,0 +1,48 @@
+# Pre-registered thresholds for Month-18 GO/NO-GO evaluation
+# These values MUST NOT be modified after pre-registration.
+# Hash of this file is checked by PreregistrationVerifier.
+
+preregistration:
+  date: "2024-09-16"
+  version: "1.0"
+  hash_algorithm: "sha256"
+
+criteria:
+  sustained_improvement:
+    trend_test: "mann-kendall"
+    trend_alpha: 0.05
+    min_total_gain_pp: 5.0
+    min_collapse_divergence_pp: 10.0
+
+  paradigm_improvement:
+    test: "paired-t"
+    alpha: 0.05
+    min_effects:
+      symcode: 5.0
+      godel: 2.0
+      soar: 5.0
+      rlm: 10.0
+
+  gdi_bounds:
+    max_gdi: 0.50
+    max_consecutive_yellow: 5
+    require_all_phases_monitored: true
+
+  publication_acceptance:
+    min_accepted: 2
+    min_tier_1_or_2: 1
+    under_review_confidence_discount: 0.15
+
+  auditability:
+    required_logs:
+      - modification_log
+      - constraint_log
+      - gdi_log
+      - interp_log
+    min_reasoning_traces: 20
+    require_hash_chain: true
+
+verdict:
+  success_threshold: 5  # criteria passed for SUCCESS
+  partial_min: 3        # minimum for PARTIAL
+  partial_max: 4        # maximum for PARTIAL

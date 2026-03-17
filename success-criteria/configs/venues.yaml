@@ -1,0 +1,31 @@
+# Publication venue tiers for Criterion 4
+tiers:
+  tier_1:
+    - "NeurIPS"
+    - "ICML"
+    - "ICLR"
+    - "AAAI"
+    - "Nature"
+    - "Science"
+    - "Nature Machine Intelligence"
+
+  tier_2:
+    - "AISTATS"
+    - "UAI"
+    - "COLT"
+    - "JMLR"
+    - "TMLR"
+    - "ACL"
+    - "EMNLP"
+    - "CVPR"
+
+  tier_3:
+    - "ICML Workshop"
+    - "NeurIPS Workshop"
+    - "ICLR Workshop"
+    - "arXiv preprint"
+
+  workshop:
+    - "SafeAI Workshop"
+    - "AI Safety Workshop"
+    - "Alignment Forum"

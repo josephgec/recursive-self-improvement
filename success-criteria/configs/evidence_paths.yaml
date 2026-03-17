@@ -1,0 +1,27 @@
+# Paths to evidence artifacts
+evidence:
+  phase_results:
+    phase_0: "data/evidence/phase_0_results.json"
+    phase_1: "data/evidence/phase_1_results.json"
+    phase_2: "data/evidence/phase_2_results.json"
+    phase_3: "data/evidence/phase_3_results.json"
+    phase_4: "data/evidence/phase_4_results.json"
+
+  safety:
+    gdi_log: "data/evidence/gdi_log.json"
+    constraint_log: "data/evidence/constraint_log.json"
+
+  publications:
+    registry: "data/evidence/publication_registry.json"
+
+  audit_trail:
+    modification_log: "data/evidence/modification_log.json"
+    constraint_log: "data/evidence/constraint_log.json"
+    gdi_log: "data/evidence/gdi_log.json"
+    interp_log: "data/evidence/interp_log.json"
+    reasoning_traces: "data/evidence/reasoning_traces.json"
+    hash_chain: "data/evidence/hash_chain.json"
+
+output:
+  verdicts: "data/verdicts/"
+  reports: "data/reports/"
