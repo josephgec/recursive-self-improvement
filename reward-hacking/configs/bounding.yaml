@@ -1,0 +1,7 @@
+bounding:
+  clip_min: -3.0
+  clip_max: 3.0
+  delta_max: 1.5
+  normalize: true
+  running_window: 200
+  anomaly_z_threshold: 3.0

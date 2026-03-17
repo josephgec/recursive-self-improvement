@@ -1,0 +1,11 @@
+eppo:
+  learning_rate: 0.0003
+  entropy_coeff: 0.02
+  entropy_target: 2.0
+  entropy_mode: "target"
+  decay_rate: 0.99
+  min_beta: 0.005
+  clip_epsilon: 0.2
+  epochs: 20
+  batch_size: 64
+  adaptive_alpha: 0.1
